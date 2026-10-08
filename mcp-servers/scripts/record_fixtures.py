@@ -146,7 +146,7 @@ async def record(
         )
     meta = {"recorded_at": dt.datetime.now(dt.UTC).isoformat(timespec="seconds")}
     (out / "index.json").write_text(
-        json.dumps({"meta": meta, "exchanges": exchanges}, indent=1) + "\n"
+        json.dumps({"meta": meta, "exchanges": exchanges}, indent=1) + "\n", newline="\n"
     )
     print(f"{name}: {len(exchanges)} exchange(s)")
 
