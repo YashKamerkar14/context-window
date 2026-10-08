@@ -62,6 +62,12 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     load.add_argument("--dry-run", action="store_true", help="validate the file only")
 
+    calibrate = sub.add_parser("calibrate", help="calibrate the merge thresholds")
+    calibrate_sub = calibrate.add_subparsers(dest="calibrate_command", required=True)
+    pairs = calibrate_sub.add_parser("pairs", help="build labelled story pairs from saved stories")
+    pairs.add_argument("--force", action="store_true", help="replace an existing pairs file")
+    calibrate_sub.add_parser("thresholds", help="sweep thresholds and write the report")
+
     mcp = sub.add_parser("mcp", help="call the MCP source servers directly")
     mcp_sub = mcp.add_subparsers(dest="mcp_command", required=True)
     mcp_sub.add_parser("list", help="list every server and its tools")
@@ -96,6 +102,8 @@ def main(argv: list[str] | None = None) -> None:
         _db(args.db_command)
     elif args.command == "settings":
         _load_settings(args.file, reset_weights=args.reset_weights, dry_run=args.dry_run)
+    elif args.command == "calibrate":
+        aio.run(_calibrate(args.calibrate_command, force=getattr(args, "force", False)))
     elif args.command == "mcp":
         aio.run(
             _mcp(
@@ -185,6 +193,49 @@ def _print_run(result: "RunResult", *, claims: bool = False) -> None:
     for error in stats.errors:
         source = f" [{error.source}]" if error.source else ""
         print(f"Error in {error.node}{source}: {error.message}")
+
+
+async def _calibrate(command: str, *, force: bool) -> None:
+    import datetime as dt
+
+    from context_window import calibration
+    from context_window.budget import Budget, use_budget
+    from context_window.db.session import make_engine, make_sessionmaker
+    from context_window.embeddings import make_embedder
+    from context_window.graph.rank import make_same_event_judge
+    from context_window.models import chat_model
+
+    settings = get_settings()
+    embed = make_embedder(settings)
+    budget = Budget(prices=settings.model_prices, max_cost_usd=0.50, max_calls=200)
+    with use_budget(budget):
+        if command == "pairs":
+            if calibration.PAIRS_FILE.exists() and not force:
+                raise SystemExit(f"{calibration.PAIRS_FILE} exists; pass --force to replace it")
+            engine = make_engine(settings.require_direct_url(), null_pool=True)
+            try:
+                async with make_sessionmaker(engine)() as session:
+                    stories = await calibration.load_stories(session)
+            finally:
+                await engine.dispose()
+            if len(stories) < 10:
+                raise SystemExit(f"only {len(stories)} saved stories; run the newsroom first")
+            built = await calibration.build_pairs(stories, chat_model(settings, "fast"), embed)
+            calibration.write_pairs(built)
+            same = sum(p.same_event for p in built)
+            print(f"wrote {len(built)} pairs ({same} same event) to {calibration.PAIRS_FILE}")
+        else:
+            pairs = calibration.read_pairs()
+            scored = await calibration.score_pairs(pairs, embed)
+            thresholds = calibration.choose_thresholds(scored)
+            judge = make_same_event_judge(chat_model(settings, "fast"))
+            judged = await calibration.judge_hardest(scored, judge)
+            text = calibration.report(settings, scored, thresholds, judged, today=dt.date.today())
+            calibration.REPORT_FILE.parent.mkdir(parents=True, exist_ok=True)
+            calibration.REPORT_FILE.write_text(text, encoding="utf-8", newline="\n")
+            print(calibration.dumps(thresholds))
+            print(f"report: {calibration.REPORT_FILE}")
+    print(f"cost: ${budget.cost_usd:.5f} ({budget.calls_started} calls)")
 
 
 def _serve_api(*, reload: bool) -> None:

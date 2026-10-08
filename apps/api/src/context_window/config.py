@@ -58,12 +58,13 @@ class Settings(BaseSettings):
     embedding_api_key: SecretStr | None = None
 
     # Ranking and merging (PLAN.md 6.3 and 6.4). Thresholds are cosine similarities and
-    # depend on the embedding model: see evals/calibration for how they were chosen.
+    # depend on the embedding model. These were calibrated for text-embedding-3-small:
+    # see evals/calibration/merge-thresholds.md, and re-run `cw calibrate` if it changes.
     max_stories: int = Field(default=10, ge=1)
     fact_check_pool: int = Field(default=14, ge=1)
-    merge_threshold: float = Field(default=0.85, ge=0, le=1)
-    merge_ask_threshold: float = Field(default=0.75, ge=0, le=1)
-    suppress_threshold: float = Field(default=0.88, ge=0, le=1)
+    merge_threshold: float = Field(default=0.81, ge=0, le=1)
+    merge_ask_threshold: float = Field(default=0.70, ge=0, le=1)
+    suppress_threshold: float = Field(default=0.84, ge=0, le=1)
 
     # Run limits (PLAN.md 6.5).
     max_items_per_beat: int = Field(default=40, ge=1, le=200)

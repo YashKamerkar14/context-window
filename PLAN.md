@@ -346,6 +346,10 @@ top 2 interests with cosine ≥ 0.30 to the story:
 
 **Calibration:** all thresholds in 6.3 and 6.4 depend on the embedding model. In
 Phase 5, calibrate them on about 100 hand-labelled story pairs and record the results.
+Done 2026-10-08 for `openai/text-embedding-3-small`: merge at 0.81, ask the fast model
+between 0.70 and 0.81, suppress at 0.84 (`evals/calibration/merge-thresholds.md`). The
+pairs are labelled by construction (model-written rewrites of real stories as same-event
+pairs, the nearest different real stories as different-event pairs) rather than by hand.
 
 ### 6.5 Reliability and budget
 
