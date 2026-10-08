@@ -126,7 +126,7 @@ flowchart TD
 | Language (agents) | Python ≥ 3.12, pinned to 3.13 in `.python-version` | |
 | Orchestration | LangGraph 1.x | `Send` fan-out, subgraphs with input/output schemas, `interrupt()` / `Command(resume=…)` |
 | Checkpointer | `langgraph-checkpoint-postgres` (`AsyncPostgresSaver`) | Direct (non-pooled) connection, `autocommit=True`, `dict_row` |
-| Model access | LangChain chat model interface (`init_chat_model`) | Provider and model names come from environment variables |
+| Model access | LangChain chat model interface (`init_chat_model`) with `langchain-openrouter` | Provider and model names come from environment variables. OpenRouter is the provider (approved 2026-10-08); structured output uses `json_schema` with `require_parameters` routing so only providers that enforce the schema are used |
 | Typed outputs | Pydantic v2 with structured output | Every agent returns a validated schema, never free text |
 | Tools | MCP servers built with standalone `fastmcp` 4, called through FastMCP's own `Client` over stdio | One persistent session per server per run, not one per call. `langchain-mcp-adapters` was dropped (checked 2026-10-08): 0.3.1 fails to import against MCP 2 and 0.3.2 pins `mcp<2`, while FastMCP 4 requires MCP 2. Reporters call tools directly, so no LangChain tool wrapping is needed |
 | API | FastAPI, deployed on Vercel's Python runtime (Fluid compute) | Short requests only. Live events are polled from `run_events`. `POST /runs` and review trigger GitHub `workflow_dispatch` |
