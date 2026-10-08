@@ -8,6 +8,8 @@ This file is the full specification and the build order. Work through the phases
 order. Each phase has a "done when" check; do not start the next phase until it passes.
 
 v2 is a revision after a design review. The changes are listed in section 16.
+v2.1 moves hosting to free tiers only: GitHub Actions runs the newsroom, Vercel hosts the
+web app and the API, and Neon hosts the database. There is no Railway and no QStash.
 
 ---
 
@@ -46,9 +48,7 @@ file plus a CLI), and npm release tracking.
 
 ```mermaid
 flowchart TD
-    T[QStash daily trigger] --> A[API: POST /runs → queue run, 202]
-    A --> Q[(runs table: queued)]
-    Q --> WK[Worker claims run]
+    T[GitHub Actions cron, or POST /runs → workflow_dispatch] --> WK[Actions job: cw run]
     WK --> E[Editor-in-chief: plan coverage]
     E -- Send per beat --> R[Reporter subgraph x4]
     R --> M[Merge and rank]
@@ -63,21 +63,38 @@ flowchart TD
     FC --> W[Writer: draft briefing]
     W --> CD[check_draft: revert unentailed sentences]
     CD --> H{Human review}
+    H -- pause: job ends, state saved in checkpoint --> RV[Review via web → workflow_dispatch: cw resume]
+    RV --> P
     H -- approve or edit --> P[Publish: web, email, revalidate]
     H -- timeout --> P
     H -- reject --> X[End: run rejected]
     P --> U[Update memory]
 ```
 
-**Execution model.** The API never runs the graph inside a request.
+**Execution model (free setup).** No server runs the graph. A GitHub Actions job does.
 
-- `POST /runs` inserts a `runs` row with status `queued` and returns 202 with the `run_id`.
-- A separate **worker** process (same image, `cw worker`) picks up queued runs with
-  `SELECT … FOR UPDATE SKIP LOCKED` and executes the graph with `thread_id = run_id`.
-- A review decision sets the run to `resume_requested`. The worker then resumes the
-  graph with `Command(resume=decision)`.
-- On startup, the worker resumes any run left in `running` whose heartbeat is stale.
-- Graph events are written to a `run_events` table, and the SSE endpoint tails that table.
+- **Starting a run.** A scheduled workflow (`newsroom.yml`, cron in `BRIEFING_TZ`)
+  runs `cw run`. A manual run comes from `POST /runs` or the "Run workflow" button,
+  which trigger the same workflow through `workflow_dispatch`.
+- **One run at a time.** The job inserts the `runs` row, which is idempotent on
+  `run_date`, and executes the graph with `thread_id = run_id`. A workflow
+  `concurrency` group stops two runs from overlapping.
+- **Pausing for review.** When the graph pauses at `human_review`, the checkpoint is
+  already saved in Postgres. The job sets the run to `awaiting_review` and exits, so no
+  Actions minutes are spent waiting.
+- **Resuming.** A review decision (`POST /runs/{id}/review`) is saved, then the API
+  triggers `workflow_dispatch` with `cw resume <run_id>`, which continues with
+  `Command(resume=decision)`.
+- **Review timeout.** A second short scheduled job (`review-timeout.yml`) runs
+  `REVIEW_TIMEOUT_HOURS` after the daily run. It auto-approves any run still waiting.
+- **Crash recovery.** If a job dies (timeout or runner failure), the run's heartbeat
+  goes stale. The next `cw run` or `cw resume` first resumes stale runs from their
+  checkpoint with `ainvoke(None, config)`.
+- **Live events.** Graph events are written to a `run_events` table. The web app polls
+  it through the API about every 2 seconds. This replaces SSE, because serverless
+  functions can't hold long streams.
+- **Local development.** `cw run` and `cw api` run on your machine against the Neon
+  `dev` branch.
 
 **The agents**
 
@@ -112,17 +129,17 @@ flowchart TD
 | Model access | LangChain chat model interface (`init_chat_model`) | Provider and model names come from environment variables |
 | Typed outputs | Pydantic v2 with structured output | Every agent returns a validated schema, never free text |
 | Tools | MCP servers built with standalone `fastmcp`, loaded through `langchain-mcp-adapters` | One persistent session per server per run, not one per call |
-| API | FastAPI | SSE tails `run_events` |
-| Worker | Same Python package, `cw worker` | A separate Railway service from the same image |
-| Database | Postgres 16+ with pgvector (Neon in production, Docker locally) | Stories, memory, run history, events, checkpoints |
+| API | FastAPI, deployed on Vercel's Python runtime (Fluid compute) | Short requests only. Live events are polled from `run_events`. `POST /runs` and review trigger GitHub `workflow_dispatch` |
+| Worker | GitHub Actions jobs running `cw run` / `cw resume` | `newsroom.yml` (daily cron plus dispatch) and `review-timeout.yml`. Use a private repo: scheduled workflows in public repos are disabled after 60 days without commits |
+| Database | Neon Postgres 18 with pgvector 0.8 | Branch `dev` for local work, `production` for deployed. Docker (`pgvector/pgvector:0.8.7-pg18`) is an optional offline alternative |
 | Migrations | Alembic with SQLAlchemy 2 (async) | Excludes the checkpointer's tables |
-| Scheduling | Upstash QStash | Verify the signature with the SDK `Receiver`; idempotent on `Upstash-Message-Id` |
+| Scheduling | GitHub Actions `schedule` (cron with an IANA time zone) | It may start a few minutes late, especially at the top of the hour, so schedule at an odd minute such as :17 |
 | Tracing and evals | LangSmith | Tracing on from Phase 4. Cost is enforced locally; LangSmith only reports it |
 | Front end | Next.js 16 (App Router), TypeScript, Tailwind CSS v4, shadcn/ui | Server components for reading pages |
 | Data fetching (web) | TanStack Query | Only on the client screens (live view, review) |
 | Graph view (web) | React Flow (`@xyflow/react`) | |
 | Email | Jinja2 HTML template plus the Resend Python SDK | Rendered in the Python publish node. React Email was dropped because it needs Node |
-| Hosting | Vercel (web); Railway services `api` and `worker` | |
+| Hosting (all free tiers) | Vercel Hobby: the web app (Next.js) and the API (FastAPI) as two projects from one repo. GitHub Actions: the newsroom jobs. Neon free plan: the database | Total cost $0 plus model usage (OpenRouter) |
 | Python tooling | uv, Ruff, pytest (+ pytest-asyncio), pyright | Live-network tests are marked `live` and excluded from CI |
 | JS tooling | Node 24 LTS, pnpm, ESLint, Prettier | |
 | CI | GitHub Actions | Lint, type-check and tests on every push |
@@ -142,18 +159,22 @@ context-window/
 ├── README.md                    public-facing; written in Phase 11
 ├── docker-compose.yml           local Postgres with pgvector
 ├── .env.example
-├── .github/workflows/ci.yml
+├── .github/workflows/
+│   ├── ci.yml                   lint, types, tests, build
+│   ├── newsroom.yml             daily cron + workflow_dispatch: cw run / cw resume
+│   └── review-timeout.yml       auto-approves runs left waiting for review
 ├── config/
 │   └── settings.yaml            sources, watchlist, interests (seed and source of truth)
 ├── apps/
-│   ├── api/                     Python service (API + worker)
+│   ├── api/                     Python package: API (Vercel) + newsroom CLI (GitHub Actions)
 │   │   ├── pyproject.toml
 │   │   ├── alembic/
 │   │   ├── src/context_window/
 │   │   │   ├── config.py        settings from environment
 │   │   │   ├── budget.py        run-scoped cost and call budget
 │   │   │   ├── events.py        writes run_events (public / admin)
-│   │   │   ├── worker.py        claims and resumes runs, heartbeat
+│   │   │   ├── worker.py        starts and resumes runs, heartbeat, stale-run recovery
+│   │   │   ├── dispatch.py      triggers GitHub workflow_dispatch from the API
 │   │   │   ├── db/              models, session, queries
 │   │   │   ├── schemas/         Pydantic models shared by agents and API
 │   │   │   ├── graph/
@@ -202,7 +223,7 @@ context-window/
 | `watchlist_repos` | Repos tracked by the releases beat | id, owner, repo, pypi_package (nullable), enabled |
 | `interests` | Topics the reader cares about | id, topic, weight, embedding, embedding_model |
 | `items` | Every raw item fetched | id, source_id, url, canonical_url, canonical_key, title, excerpt (≤ 500 chars), published_at, content_hash, fetched_at, consumed_at |
-| `runs` | One row per newsroom run | id, run_date, trigger (`schedule` / `manual`), idempotency_key (unique), status, started_at, finished_at, heartbeat_at, stats (JSON), trace_url |
+| `runs` | One row per newsroom run | id, run_date, trigger (`schedule` / `manual`), status, started_at, finished_at, heartbeat_at, actions_run_url, stats (JSON), trace_url |
 | `run_events` | Event log for streaming and replay | id (bigserial), run_id, ts, node, kind, public (bool), payload (JSONB) |
 | `stories` | Stories produced by a run | id (UUIDv7), run_id, run_date, beat, headline, summary, why_it_matters, is_breaking_change, published_at, score, status, drop_reason, embedding, embedding_model |
 | `story_sources` | Links a story to its source items | story_id, item_id |
@@ -286,7 +307,7 @@ Rules:
 | `rewrite` (inside `fact_check_story`) | story plus verdicts | revised story | Fast model. It may remove or correct unsupported or unclear claims, and remove the sentences that cite them. It may not add new facts. Maximum one rewrite |
 | `write_briefing` | `verified` | `draft` | Takes the top `MAX_STORIES` verified stories, ordered by score, with breaking-change releases first. Sets `light_day` when fewer than 5 are verified. Uses only facts in the verified stories |
 | `check_draft` | `draft`, `verified` | `draft` | Fast model with structured output. It flags any draft sentence that the verified stories do not support, and flagged sentences are reverted to the verified wording |
-| `human_review` | `draft` | `review` | Does nothing non-idempotent before `interrupt()`, because the node re-runs on resume. Skipped when `REVIEW_MODE=auto`. After `REVIEW_TIMEOUT_HOURS`, the worker resumes with `approve` and `decided_by=timeout`. Edited sentences are re-checked; if that is not possible they are shown as "edited by the editor". `reject` ends the run as `rejected` and publishes nothing |
+| `human_review` | `draft` | `review` | Does nothing non-idempotent before `interrupt()`, because the node re-runs on resume. Skipped when `REVIEW_MODE=auto`. The Actions job exits while paused. After `REVIEW_TIMEOUT_HOURS`, `review-timeout.yml` resumes it with `approve` and `decided_by=timeout`. Edited sentences are re-checked; if that is not possible they are shown as "edited by the editor". `reject` ends the run as `rejected` and publishes nothing |
 | `publish` | `draft`, `review` | briefing row, email, revalidate | Upserts the briefing by date. Sends with the Resend idempotency key `briefing-<date>`. Calls the web revalidate endpoint. A forced re-run replaces the briefing and does not re-send the email unless `--resend` is given |
 | `update_memory` | published stories | | Marks the stories `published` and sets `consumed_at` on their items. Stores the embeddings and finalises the run stats |
 
@@ -331,11 +352,14 @@ Phase 5, calibrate them on about 100 hand-labelled story pairs and record the re
   the design above costs about $0.45 to $0.80 per run. A naive per-claim strong-model
   fact-check would cost about $1.65 or more. Re-check this against the chosen provider's
   real prices in Phase 4.
-- **Crash recovery:** the worker writes a heartbeat every 30 s. On startup it resumes
-  runs in `running` whose heartbeat is older than 2 minutes, using `ainvoke(None, config)`.
-- **Database:** the checkpointer and the worker use `DATABASE_URL_DIRECT`, a non-pooled
-  connection, through `AsyncConnectionPool` with a connection health check (Neon scales
-  to zero). The API uses the pooled `DATABASE_URL`. Set `LANGGRAPH_STRICT_MSGPACK=true`
+- **Crash recovery:** a running job writes a heartbeat every 30 s. Before starting new
+  work, `cw run` and `cw resume` resume any run in `running` whose heartbeat is older
+  than 2 minutes, using `ainvoke(None, config)`. The newsroom job has
+  `timeout-minutes: 45` and a `concurrency` group, so two jobs never run at once.
+- **Database:** the checkpointer and the Actions jobs use `DATABASE_URL_DIRECT`, a
+  non-pooled connection, through `AsyncConnectionPool` with a connection health check
+  (Neon scales to zero). The API on Vercel uses the pooled `DATABASE_URL`, with a small
+  pool created per function instance. Set `LANGGRAPH_STRICT_MSGPACK=true`
   and allowlist the project's Pydantic modules.
 - **Prompt injection:** agents that read fetched text have no tools and return
   structured output only. Fetched content is wrapped in labelled delimiters under a
@@ -391,11 +415,10 @@ structured data and never raise on an empty result.
 
 | Method and path | Purpose | Auth |
 |---|---|---|
-| `POST /runs` | Queue a run; returns 202 with `run_id`. Idempotent on `Upstash-Message-Id` and on `run_date` (`?force=true` to override) | QStash signature or admin token |
-| `GET /runs/{id}` | Run status and public stats | Public (`trace_url` is admin only) |
-| `GET /runs/{id}/stream` | SSE from `run_events`. Supports `Last-Event-ID`, with a 15 s heartbeat | Public: sanitised events only (node, status, counts, timings). Admin, with a signed stream token valid for 5 minutes: full events including agent output and draft |
-| `POST /runs/{id}/stream-token` | Issue an admin stream token | Admin token |
-| `POST /runs/{id}/review` | Record a review decision; the worker resumes the run | Admin token |
+| `POST /runs` | Trigger `newsroom.yml` through `workflow_dispatch`; returns 202. The job is idempotent on `run_date` (`force=true` to override) | Admin token |
+| `GET /runs/{id}` | Run status and public stats | Public (`trace_url` and `actions_run_url` are admin only) |
+| `GET /runs/{id}/events?after=<event id>` | Events from `run_events` newer than `after`; the web app polls about every 2 s | Public: sanitised events only (node, status, counts, timings). Admin: full events including agent output and draft |
+| `POST /runs/{id}/review` | Record a review decision, then trigger `workflow_dispatch` to run `cw resume` | Admin token |
 | `GET /briefings/latest` | Latest published briefing | Public |
 | `GET /briefings/{date}` | Briefing for a date | Public |
 | `GET /briefings` | Archive list | Public |
@@ -407,9 +430,8 @@ structured data and never raise on an empty result.
 - Version 1 has a single reader. Write actions are protected by one `ADMIN_TOKEN`.
 - The browser never sees `ADMIN_TOKEN`. The Next.js server attaches it.
 - CORS allows only `WEB_ORIGIN`.
-- QStash requests are verified with the SDK `Receiver`, against the raw request body
-  and the explicit `PUBLIC_API_URL`. The reconstructed URL behind Railway's proxy may
-  not match the `sub` claim.
+- The API triggers workflows with `GITHUB_DISPATCH_TOKEN`, a fine-grained token limited
+  to this repo with only the "Actions: read and write" permission.
 
 ---
 
@@ -427,14 +449,13 @@ structured data and never raise on an empty result.
    and next links.
 3. **Live newsroom (`/newsroom`)** — the agent graph drawn with React Flow. The dynamic
    branches (4 reporters and about 14 fact-checks) are drawn from `run_events` as
-   stacked child nodes, not from the static graph. Nodes light up as they run. Public
+   stacked child nodes, not from the static graph. The page polls the events endpoint
+   about every 2 seconds while a run is active. Nodes light up as they run. Public
    viewers see sanitised progress. An admin sees agent output in a side panel and, when
    the run pauses for review, the draft with approve, edit, remove and reject controls.
 4. **Login (`/login`)** — a password sets an httpOnly, Secure, SameSite=Lax signed
-   session cookie (`ADMIN_SESSION_SECRET`). Admin calls go through `app/api/admin/*`
-   route handlers, which add `ADMIN_TOKEN` on the server. The admin SSE connects
-   directly to Railway with a short-lived stream token, which avoids Vercel function
-   time limits.
+   session cookie (`ADMIN_SESSION_SECRET`). Admin calls, including polling admin events,
+   go through `app/api/admin/*` route handlers, which add `ADMIN_TOKEN` on the server.
 
 **Freshness:** publish calls `POST /api/revalidate` (`REVALIDATE_SECRET`) so cached pages
 update immediately.
@@ -494,29 +515,31 @@ them and prints a table.
 
 ### Phase 0 — Accounts and tools (done by you, not the coding assistant)
 
-- [ ] Install Python 3.13, Node 24 LTS, uv, pnpm and Docker.
-- [ ] Create a GitHub repository named `context-window`.
-- [ ] Get an API key for a model provider and note its current per-token prices.
-- [ ] Get an API key for an embeddings provider (can be the same one).
+- [x] Install Python 3.13, Node 24 LTS, uv and pnpm. Docker is optional.
+- [x] Create a private GitHub repository named `context-window`.
+- [x] Get an OpenRouter API key with a credit limit. Note the per-token prices of the chosen models in Phase 4.
+- [ ] Get an embeddings key (Gemini free tier, or a local model).
 - [ ] Create a LangSmith account and API key.
-- [ ] Create a GitHub personal access token with public read access.
-- [ ] Create Neon, Railway and Vercel accounts now, because a skeleton is deployed in Phase 1.
-- [ ] Later: Upstash and Resend accounts, plus a domain for sending email.
+- [ ] Create a GitHub personal access token with public read access (for release data).
+- [x] Create a Neon project (Postgres 18, AWS US East 1) with a `dev` branch.
+- [ ] Create a Vercel account, because a skeleton is deployed in Phase 1.
+- [ ] Later: a Resend account. Without a domain, send from Resend's test address to your own email.
 
 ### Phase 1 — Scaffold and skeleton deploy
 
 1. Create the folder structure from section 4.
 2. Set up `apps/api` with uv, Ruff, pyright and pytest. Add `cw` with `api` and `worker` subcommands. The worker is an empty loop with a heartbeat.
 3. Set up `apps/web` with Next.js 16, TypeScript, Tailwind v4 and shadcn/ui.
-4. Add `docker-compose.yml` running Postgres with the pgvector extension.
+4. Connect to the Neon `dev` branch. Add `docker-compose.yml` as an optional offline database.
 5. Add `.env.example` with every variable from section 13.
 6. Add a GitHub Actions workflow that lints, type-checks and tests both apps.
-7. Deploy the skeleton: Neon database, Railway `api` and `worker` services, Vercel web.
+7. Deploy the skeleton: the web app and the API as two Vercel projects, plus a
+   `newsroom.yml` workflow that runs `cw worker --once` on dispatch.
 
 **Done when:**
-- `docker compose up` starts Postgres.
-- The API serves `/health` locally and on Railway.
-- The worker heartbeats on Railway.
+- The Neon `dev` branch is reachable with both URLs and pgvector is available.
+- The API serves `/health` locally and on Vercel.
+- `newsroom.yml` runs from the "Run workflow" button and logs a heartbeat.
 - The web app shows a placeholder page on Vercel.
 - CI passes.
 
@@ -585,26 +608,28 @@ them and prints a table.
 3. Add `check_draft`.
 4. Add `human_review` with the interrupt, `REVIEW_MODE=manual|auto`, the review timeout and the reject path.
 5. Add `publish` (Jinja2 email through Resend, with an idempotency key) and `update_memory`.
-6. Move execution into the worker: claim, heartbeat, resume on startup, resume after review.
+6. Add `cw resume`, the heartbeat and stale-run recovery. Then wire `newsroom.yml`
+   (cron plus dispatch with `run`/`resume`) and `review-timeout.yml`.
 
 **Done when:**
 - Fact-checker agreement on the dataset is at least 90%.
 - A story with a planted false claim is corrected or dropped.
-- A worker killed halfway through resumes from its checkpoint.
+- A run killed halfway through (cancel the Actions job) resumes from its checkpoint on the next `cw run` or `cw resume`.
 - A run in manual mode pauses, then continues after a review decision from the CLI.
 - A review timeout auto-approves.
 
-### Phase 7 — API and streaming
+### Phase 7 — API and live events
 
-1. Implement the endpoints in section 8.
-2. Write public and admin events to `run_events`, and stream them over SSE with
-   `Last-Event-ID` replay. Capture subgraph progress with
+1. Implement the endpoints in section 8, and deploy the API to Vercel.
+2. Write public and admin events to `run_events`, and serve them from the polling
+   endpoint. Capture subgraph progress with
    `astream(..., subgraphs=True, stream_mode=["updates", "custom"])`.
-3. Add admin-token protection, stream tokens, CORS and QStash signature verification.
+3. Add admin-token protection, CORS and `workflow_dispatch` triggering with a
+   fine-grained token.
 
 **Done when:**
-- A run can be queued, watched live with `curl` (public and admin), reviewed and published entirely through the API.
-- A duplicate QStash delivery does not start a second run.
+- A run can be started, followed by polling with `curl` (public and admin), reviewed and published entirely through the deployed API.
+- Triggering a second run for the same date does not create a duplicate.
 
 ### Phase 8 — Front end
 
@@ -620,10 +645,10 @@ and vote on stories, all from the browser. `ADMIN_TOKEN` does not appear in the 
 
 ### Phase 9 — Schedule and email in production
 
-1. Verify the sending domain in Resend.
-2. Create the QStash schedule for the daily run, with the cron converted from `BRIEFING_TZ` to UTC.
-3. Set `REVIEW_MODE=auto` in production.
-4. Add basic monitoring: a failed or stuck run sends you an email.
+1. Set up Resend. Use the test sender to your own address, or verify a domain if you have one.
+2. Add the repository secrets for Actions, and enable the `newsroom.yml` cron in `BRIEFING_TZ` at an odd minute.
+3. Point production at the Neon `production` branch, and set `REVIEW_MODE=auto` there.
+4. Add basic monitoring. GitHub emails you when a workflow fails; also email from the job when a run ends `failed`.
 
 **Done when:** a briefing is published and emailed on three consecutive days with no
 manual steps.
@@ -699,9 +724,11 @@ ADMIN_SESSION_SECRET=
 REVALIDATE_SECRET=
 NEXT_PUBLIC_API_URL=
 
-# Deployment
-QSTASH_CURRENT_SIGNING_KEY=
-QSTASH_NEXT_SIGNING_KEY=
+# GitHub Actions dispatch (used by the API to start and resume runs)
+GITHUB_DISPATCH_TOKEN=           # fine-grained, this repo only, Actions: read and write
+GITHUB_REPOSITORY=YashKamerkar14/context-window
+
+# Email
 RESEND_API_KEY=
 RESEND_FROM=
 BRIEFING_EMAIL_TO=
@@ -756,3 +783,4 @@ BRIEFING_EMAIL_TO=
 | Ops | No timezone; no run idempotency; Neon pooling vs checkpointer | `BRIEFING_TZ`, idempotency key, partial unique index, direct DB URL |
 | Phasing | Deploy last; checkpointer late; eval dataset late | Skeleton deploy in Phase 1; checkpointer in Phase 4; dataset gates Phase 6; schedule before eval |
 | Tooling | Node 20 is end-of-life; FastMCP package ambiguous | Node 24 LTS, Python 3.13, standalone `fastmcp`, pyright |
+| Hosting (v2.1) | Railway (about $5 a month) and QStash | GitHub Actions jobs run the newsroom (cron plus dispatch, pause and resume through checkpoints). FastAPI and Next.js on Vercel Hobby. Neon free. Polling instead of SSE |
