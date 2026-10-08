@@ -164,12 +164,13 @@ context-window/
 │   ├── newsroom.yml             daily cron + workflow_dispatch: cw run / cw resume
 │   └── review-timeout.yml       auto-approves runs left waiting for review
 ├── config/
-│   └── settings.yaml            sources, watchlist, interests (seed and source of truth)
+│   └── settings.toml            sources, watchlist, interests (seed and source of truth; TOML
+│                                so the standard library parses it, no YAML dependency)
 ├── apps/
 │   ├── api/                     Python package: API (Vercel) + newsroom CLI (GitHub Actions)
 │   │   ├── pyproject.toml
-│   │   ├── alembic/
 │   │   ├── src/context_window/
+│   │   │   ├── db/migrations/   Alembic, shipped inside the package (run with `cw db init`)
 │   │   │   ├── config.py        settings from environment
 │   │   │   ├── budget.py        run-scoped cost and call budget
 │   │   │   ├── events.py        writes run_events (public / admin)
@@ -219,9 +220,9 @@ context-window/
 
 | Table | Purpose | Key columns |
 |---|---|---|
-| `sources` | Feeds and APIs to read | id, beat, kind, name, url, authority (1 to 5), enabled |
-| `watchlist_repos` | Repos tracked by the releases beat | id, owner, repo, pypi_package (nullable), enabled |
-| `interests` | Topics the reader cares about | id, topic, weight, embedding, embedding_model |
+| `sources` | Feeds and APIs to read | id, beat, kind, name, url (unique), authority (1 to 5), options (JSONB, e.g. arXiv categories, HN min points), enabled |
+| `watchlist_repos` | Repos tracked by the releases beat | id, owner, repo (lower-case, unique pair), pypi_package (nullable), tag_pattern (regex the tag must fully match; filters monorepos such as langgraph's `cli==` and `sdk==` tags), enabled |
+| `interests` | Topics the reader cares about | id, topic (unique), description (the text that is embedded), weight (0.2 to 2.0), embedding, embedding_model |
 | `items` | Every raw item fetched | id, source_id, url, canonical_url, canonical_key, title, excerpt (≤ 500 chars), published_at, content_hash, fetched_at, consumed_at |
 | `runs` | One row per newsroom run | id, run_date, trigger (`schedule` / `manual`), status, started_at, finished_at, heartbeat_at, actions_run_url, stats (JSON), trace_url |
 | `run_events` | Event log for streaming and replay | id (bigserial), run_id, ts, node, kind, public (bool), payload (JSONB) |
@@ -234,7 +235,11 @@ context-window/
 
 **Constraints and indexes**
 - `items`: unique `(source_id, canonical_url)`, index on `canonical_key`.
-- `runs`: partial unique index on `run_date` where status is not in (`failed`, `rejected`, `expired`).
+- `runs`: partial unique index on `run_date` where status is active (`queued`, `running`,
+  `awaiting_review`, `resume_requested`). A published date is detected in code, so a
+  forced re-run is possible without deleting history.
+- Enums are stored as VARCHAR plus a CHECK constraint, not native Postgres enums, so new
+  values need no `ALTER TYPE`.
 - The vector column dimension comes from `EMBEDDING_DIM` (default 1536). At this
   volume (under 10k rows a year) exact search is fine. Add HNSW only if dim ≤ 2000.
 
@@ -550,11 +555,15 @@ them and prints a table.
    indexes and the partial unique index, and add an `include_object` filter for the
    checkpointer tables.
 3. Add `cw db init`, which runs migrations and `AsyncPostgresSaver.setup()`.
-4. Write `config/settings.yaml` with starter sources, a repo watchlist and five starter
+4. Write `config/settings.toml` with starter sources, a repo watchlist and five starter
    interests (agent frameworks, evaluation, MCP, retrieval, model releases). Add
    `cw settings load` to seed it.
 5. Write query helpers: canonicalise a URL or key, check whether a key is consumed, save
-   items, find similar stories, and claim a queued run.
+   items, find similar stories, create a run (one active run per date) and find stale runs.
+
+Known source gaps (checked 2026-10-08): Anthropic, Meta AI and Mistral publish no RSS feed,
+and the LangChain blog's feed now redirects to HTML. Their news reaches the briefing only
+through Hacker News and the releases beat until a fetcher for their news pages is added.
 
 **Done when:**
 - `cw db init` runs cleanly on an empty database, locally and on Neon.
