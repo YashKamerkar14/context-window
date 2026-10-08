@@ -1,0 +1,26 @@
+name: Newsroom
+
+# Phase 1 skeleton: a manual run that starts the worker once and logs a heartbeat.
+# The daily cron and the run/resume commands are added in Phase 6.
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: newsroom
+  cancel-in-progress: false
+
+jobs:
+  run:
+    name: Newsroom run
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          enable-cache: true
+      - run: uv sync --locked --no-dev
+      - run: uv run cw worker --once
