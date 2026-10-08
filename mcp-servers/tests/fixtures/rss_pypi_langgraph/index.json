@@ -1,0 +1,16 @@
+{
+ "meta": {
+  "recorded_at": "2026-10-08T18:48:47+00:00"
+ },
+ "exchanges": [
+  {
+   "url": "https://pypi.org/rss/project/langgraph/releases.xml",
+   "status": 200,
+   "headers": {
+    "content-type": "text/xml; charset=UTF-8"
+   },
+   "body_file": "00.xml",
+   "gzip": true
+  }
+ ]
+}

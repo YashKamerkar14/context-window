@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='utf-8'?>
+<feed xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns="http://www.w3.org/2005/Atom">
+  <id>https://arxiv.org/api/7UpbZavfnCgF7UwbeCrQEBpybW0</id>
+  <title>arXiv Query: search_query=&amp;id_list=2610.03799&amp;start=0&amp;max_results=1</title>
+  <updated>2026-10-08T18:48:51Z</updated>
+  <link href="https://arxiv.org/api/query?search_query=&amp;start=0&amp;max_results=1&amp;id_list=2610.03799" type="application/atom+xml"/>
+  <opensearch:itemsPerPage>1</opensearch:itemsPerPage>
+  <opensearch:totalResults>1</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <entry>
+    <id>http://arxiv.org/abs/2610.03799v1</id>
+    <title>StepCAD: Mesh-to-CAD Code Generation via LLM Policy and Geometry-Guided Search</title>
+    <updated>2026-10-01T05:57:05Z</updated>
+    <link href="https://arxiv.org/abs/2610.03799v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2610.03799v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Recovering executable CAD programs from 3D meshes is challenging due to the compositional nature of CAD construction and the interaction between discrete modeling choices and continuous parameters. Many learning-based methods predict complete programs in a single pass and rely predominantly on sketc…</summary>
+    <category term="cs.CV" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-10-01T05:57:05Z</published>
+    <arxiv:primary_category term="cs.CV"/>
+    <author>
+      <name>Ghadi Nehme</name>
+    </author>
+    <author>
+      <name>Faez Ahmed</name>
+    </author>
+  </entry>
+</feed>

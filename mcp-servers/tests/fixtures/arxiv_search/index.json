@@ -1,0 +1,16 @@
+{
+ "meta": {
+  "recorded_at": "2026-10-08T18:48:51+00:00"
+ },
+ "exchanges": [
+  {
+   "url": "https://export.arxiv.org/api/query?max_results=5&search_query=cat%3Acs.CL+OR+cat%3Acs.AI&sortBy=submittedDate&sortOrder=descending&start=0",
+   "status": 200,
+   "headers": {
+    "content-type": "application/atom+xml; charset=utf-8"
+   },
+   "body_file": "00.xml",
+   "gzip": false
+  }
+ ]
+}

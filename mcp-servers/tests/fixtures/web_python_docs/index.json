@@ -1,0 +1,25 @@
+{
+ "meta": {
+  "recorded_at": "2026-10-08T18:48:53+00:00"
+ },
+ "exchanges": [
+  {
+   "url": "https://docs.python.org/robots.txt",
+   "status": 200,
+   "headers": {
+    "content-type": "text/plain"
+   },
+   "body_file": "00.txt",
+   "gzip": true
+  },
+  {
+   "url": "https://docs.python.org/3/library/urllib.robotparser.html",
+   "status": 200,
+   "headers": {
+    "content-type": "text/html"
+   },
+   "body_file": "01.html",
+   "gzip": true
+  }
+ ]
+}

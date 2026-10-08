@@ -1,0 +1,16 @@
+{
+ "meta": {
+  "recorded_at": "2026-10-08T18:48:50+00:00"
+ },
+ "exchanges": [
+  {
+   "url": "https://api.github.com/repos/langchain-ai/no-such-repo-cw/releases?page=1&per_page=30",
+   "status": 404,
+   "headers": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "body_file": "00.json",
+   "gzip": true
+  }
+ ]
+}

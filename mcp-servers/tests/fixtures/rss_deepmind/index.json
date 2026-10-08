@@ -1,0 +1,16 @@
+{
+ "meta": {
+  "recorded_at": "2026-10-08T18:48:46+00:00"
+ },
+ "exchanges": [
+  {
+   "url": "https://deepmind.google/blog/rss.xml",
+   "status": 200,
+   "headers": {
+    "content-type": "text/xml"
+   },
+   "body_file": "00.xml",
+   "gzip": false
+  }
+ ]
+}

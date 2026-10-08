@@ -1,0 +1,255 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rss xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wfw="http://wellformedweb.org/CommentAPI/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:slash="http://purl.org/rss/1.0/modules/slash/" version="2.0">
+
+<channel>
+	<title>The latest on AI &amp; ML - The GitHub Blog</title>
+	<atom:link href="https://github.blog/ai-and-ml/feed/" rel="self" type="application/rss+xml"/>
+	<link>https://github.blog/ai-and-ml/</link>
+	<description>Updates, ideas, and inspiration from GitHub to help developers build and design software.</description>
+	<lastBuildDate>Thu, 08 Oct 2026 01:47:19 +0000</lastBuildDate>
+	<language>en-US</language>
+	<sy:updatePeriod>
+	hourly	</sy:updatePeriod>
+	<sy:updateFrequency>
+	1	</sy:updateFrequency>
+	<generator>https://wordpress.org/?v=7.1.3</generator>
+
+<image>
+	<url>https://github.blog/wp-content/uploads/2019/01/cropped-github-favicon-512.png?fit=32%2C32</url>
+	<title>The latest on AI &amp; ML - The GitHub Blog</title>
+	<link>https://github.blog/ai-and-ml/</link>
+	<width>32</width>
+	<height>32</height>
+</image> 
+<site xmlns="com-wordpress:feed-additions:1">153214340</site>	<item>
+		<title>Secret protection must scale with software</title>
+		<link>https://github.blog/ai-and-ml/github-copilot/secret-protection-must-scale-with-software/</link>
+		
+		<dc:creator>Erin Havens</dc:creator>
+		<pubDate>Wed, 07 Oct 2026 17:45:34 +0000</pubDate>
+				<category>AI &amp; ML</category>
+		<category>Generative AI</category>
+		<category>GitHub Copilot</category>
+		<category>AI</category>
+		<category>Secret Protection</category>
+		<category>Secret Scanning</category>
+		<guid isPermaLink="false">https://github.blog/?p=99310</guid>
+
+					<description>&lt;p&gt;Developers aren’t becoming more careless; they’re being outpaced. The tools that let developers create more software should also take on more of the work of protecting it.&lt;/p&gt;
+&lt;p&gt;The post &lt;a href="https://github.blog/ai-and-ml/github-copilot/secret-protection-must-scale-with-software/"&gt;Secret pro…</description>
+										<content:encoded>&lt;!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd"&gt;
+&lt;html&gt;&lt;body&gt;&lt;p class="wp-block-paragraph"&gt;Today, &lt;a href="https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4"&gt;one in three pull requests on GitHub involves an AI agent&lt;…</content:encoded>
+					
+		
+		
+		<post-id xmlns="com-wordpress:feed-additions:1">99310</post-id>	</item>
+		<item>
+		<title>ReviewBench: An open benchmark for AI code review</title>
+		<link>https://github.blog/ai-and-ml/github-copilot/reviewbench-an-open-benchmark-for-ai-code-review/</link>
+		
+		<dc:creator>Michelle Zhou</dc:creator>
+		<pubDate>Mon, 05 Oct 2026 15:59:40 +0000</pubDate>
+				<category>AI &amp; ML</category>
+		<category>GitHub Copilot</category>
+		<category>AI</category>
+		<category>benchmarking</category>
+		<category>code review</category>
+		<guid isPermaLink="false">https://github.blog/?p=99258</guid>
+
+					<description>&lt;p&gt;We’re launching ReviewBench, a benchmark for code review agents built on representative GitHub pull requests, multi-source ground truth, calibrated evaluation, and production-aligned metrics.&lt;/p&gt;
+&lt;p&gt;The post &lt;a href="https://github.blog/ai-and-ml/github-copilot/reviewbench-an-open-benchmark-for-a…</description>
+										<content:encoded>&lt;!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd"&gt;
+&lt;html&gt;&lt;body&gt;&lt;p class="wp-block-paragraph"&gt;Agentic code review is becoming an essential piece of how development happens. It helps you inspect pull requests, catch issues, and decide what deserv…</content:encoded>
+					
+		
+		
+		<post-id xmlns="com-wordpress:feed-additions:1">99258</post-id>	</item>
+		<item>
+		<title>AI is changing developer work. Here are three skills to strengthen.</title>
+		<link>https://github.blog/ai-and-ml/ai-is-rewriting-the-developer-career-ladder-heres-how-to-stand-out/</link>
+		
+		<dc:creator>Gwen Davis</dc:creator>
+		<pubDate>Fri, 02 Oct 2026 15:00:00 +0000</pubDate>
+				<category>AI &amp; ML</category>
+		<category>Career growth</category>
+		<category>Developer skills</category>
+		<category>AI</category>
+		<category>career development</category>
+		<guid isPermaLink="false">https://github.blog/?p=99170</guid>
+
+					<description>&lt;p&gt;Learn to direct AI agents, critically review their output, and keep technical judgment at the center of your workflow.&lt;/p&gt;
+&lt;p&gt;The post &lt;a href="https://github.blog/ai-and-ml/ai-is-rewriting-the-developer-career-ladder-heres-how-to-stand-out/"&gt;AI is changing developer work. Here are three skills t…</description>
+										<content:encoded>&lt;!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd"&gt;
+&lt;html&gt;&lt;body&gt;&lt;p class="wp-block-paragraph"&gt;AI is changing how developers work and apply their skills. Writing code is still essential, but developers increasingly need to know how to direct AI, …</content:encoded>
+					
+		
+		
+		<post-id xmlns="com-wordpress:feed-additions:1">99170</post-id>	</item>
+		<item>
+		<title>GitHub Copilot app for Beginners: How to build custom workflows with canvases</title>
+		<link>https://github.blog/ai-and-ml/github-copilot/github-copilot-app-for-beginners-how-to-build-custom-workflows-with-canvases/</link>
+		
+		<dc:creator>Kayla Cinnamon</dc:creator>
+		<pubDate>Fri, 25 Sep 2026 18:00:00 +0000</pubDate>
+				<category>AI &amp; ML</category>
+		<category>GitHub Copilot</category>
+		<category>GitHub Copilot app</category>
+		<category>GitHub Copilot app for Beginners</category>
+		<guid isPermaLink="false">https://github.blog/?p=99027</guid>
+
+					<description>&lt;p&gt;Describe the interface you need in plain English, then let the agent build a live surface you can both use and update—so you spend less time adapting to tools and more time getting work done.&lt;/p&gt;
+&lt;p&gt;The post &lt;a href="https://github.blog/ai-and-ml/github-copilot/github-copilot-app-for-beginners-ho…</description>
+										<content:encoded>&lt;!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd"&gt;
+&lt;html&gt;&lt;body&gt;&lt;p class="wp-block-paragraph"&gt;Most tools give you a fixed set of screens and ask you to fit your work into them. But what if you could start with the workflow you want instead and h…</content:encoded>
+					
+		
+		
+		<post-id xmlns="com-wordpress:feed-additions:1">99027</post-id>	</item>
+		<item>
+		<title>When chat is the wrong UI</title>
+		<link>https://github.blog/ai-and-ml/github-copilot/when-chat-is-the-wrong-ui/</link>
+		
+		<dc:creator>Burke Holland</dc:creator>
+		<pubDate>Thu, 24 Sep 2026 20:00:00 +0000</pubDate>
+				<category>AI &amp; ML</category>
+		<category>GitHub Copilot</category>
+		<category>canvases</category>
+		<category>GitHub Copilot app</category>
+		<guid isPermaLink="false">https://github.blog/?p=98939</guid>
+
+					<description>&lt;p&gt;What is a developer to do when they need something more tangible than a chat box? Enter canvases.&lt;/p&gt;
+&lt;p&gt;The post &lt;a href="https://github.blog/ai-and-ml/github-copilot/when-chat-is-the-wrong-ui/"&gt;When chat is the wrong UI&lt;/a&gt; appeared first on &lt;a href="https://github.blog"&gt;The GitHub Blog&lt;/a&gt;.&lt;/p…</description>
+										<content:encoded>&lt;!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd"&gt;
+&lt;html&gt;&lt;body&gt;&lt;p class="wp-block-paragraph"&gt;We&amp;rsquo;re 176 years into this AI experiment.&lt;/p&gt;
+
+
+
+&lt;p class="wp-block-paragraph"&gt;Wait&amp;hellip;it&amp;rsquo;s only been three years?&lt;/p&gt;
+
+
+
+&lt;p class="wp-b…</content:encoded>
+					
+		
+		
+		<post-id xmlns="com-wordpress:feed-additions:1">98939</post-id>	</item>
+		<item>
+		<title>AI-powered fuzzing with the GitHub Security Lab Taskflow Agent</title>
+		<link>https://github.blog/security/application-security/ai-powered-fuzzing-with-the-github-security-lab-taskflow-agent/</link>
+		
+		<dc:creator>Antonio Morales</dc:creator>
+		<pubDate>Thu, 24 Sep 2026 18:26:12 +0000</pubDate>
+				<category>AI &amp; ML</category>
+		<category>Application security</category>
+		<category>Generative AI</category>
+		<category>Security</category>
+		<category>Vulnerability research</category>
+		<category>agentic AI</category>
+		<category>fuzzing</category>
+		<category>GitHub Security Lab</category>
+		<category>open source</category>
+		<guid isPermaLink="false">https://github.blog/?p=98465</guid>
+
+					<description>&lt;p&gt;In this blog post, I explain how to use the new fuzzing taskflow based on the GitHub Security Lab Taskflow Agent AI framework. &lt;/p&gt;
+&lt;p&gt;The post &lt;a href="https://github.blog/security/application-security/ai-powered-fuzzing-with-the-github-security-lab-taskflow-agent/"&gt;AI-powered fuzzing with the G…</description>
+										<content:encoded>&lt;!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd"&gt;
+&lt;html&gt;&lt;body&gt;&lt;p class="wp-block-paragraph"&gt;&lt;em&gt;If you&amp;rsquo;re new to fuzzing and want to learn the fundamentals first, check out our Fuzzing 101 course at &lt;a href="https://gh.io/fuzzing101"&gt;gh.…</content:encoded>
+					
+		
+		
+		<post-id xmlns="com-wordpress:feed-additions:1">98465</post-id>	</item>
+		<item>
+		<title>Rendering huge pull requests in the GitHub Copilot app</title>
+		<link>https://github.blog/engineering/user-experience/rendering-huge-pull-requests-in-the-github-copilot-app/</link>
+		
+		<dc:creator>Alberto Gimeno</dc:creator>
+		<pubDate>Wed, 23 Sep 2026 18:29:49 +0000</pubDate>
+				<category>AI &amp; ML</category>
+		<category>Engineering</category>
+		<category>GitHub Copilot</category>
+		<category>User experience</category>
+		<category>GitHub Copilot app</category>
+		<category>technical deep dive</category>
+		<guid isPermaLink="false">https://github.blog/?p=99002</guid>
+
+					<description>&lt;p&gt;How we rebuilt the diff surface in the GitHub Copilot app to open a million-line pull request with hundreds of inline review comments.&lt;/p&gt;
+&lt;p&gt;The post &lt;a href="https://github.blog/engineering/user-experience/rendering-huge-pull-requests-in-the-github-copilot-app/"&gt;Rendering huge pull requests in …</description>
+										<content:encoded>&lt;!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd"&gt;
+&lt;html&gt;&lt;body&gt;&lt;p class="wp-block-paragraph"&gt;Broad refactors and migrations often have to land as one change.&lt;/p&gt;
+
+
+
+&lt;p class="wp-block-paragraph"&gt;&lt;a href="https://docs.github.com/pull-requests/ho…</content:encoded>
+					
+		
+		
+		<post-id xmlns="com-wordpress:feed-additions:1">99002</post-id>	</item>
+		<item>
+		<title>Should you read the code, is RAG dead, and did Skills kill MCP?</title>
+		<link>https://github.blog/ai-and-ml/should-you-read-the-code-is-rag-dead-and-did-skills-kill-mcp/</link>
+		
+		<dc:creator>GPS</dc:creator>
+		<pubDate>Fri, 18 Sep 2026 15:00:00 +0000</pubDate>
+				<category>AI &amp; ML</category>
+		<category>AI</category>
+		<category>GitHub Podcast</category>
+		<guid isPermaLink="false">https://github.blog/?p=98893</guid>
+
+					<description>&lt;p&gt;We dive into these questions and other AI hot takes on the latest episode of the GitHub Podcast.&lt;/p&gt;
+&lt;p&gt;The post &lt;a href="https://github.blog/ai-and-ml/should-you-read-the-code-is-rag-dead-and-did-skills-kill-mcp/"&gt;Should you read the code, is RAG dead, and did Skills kill MCP?&lt;/a&gt; appeared first…</description>
+										<content:encoded>&lt;!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd"&gt;
+&lt;html&gt;&lt;body&gt;&lt;p class="wp-block-paragraph"&gt;Hot takes turn complicated topics into one confident sentence. That makes them great for engagement, but not necessarily for understanding.&lt;/p&gt;
+
+
+
+&lt;p c…</content:encoded>
+					
+		
+		
+		<post-id xmlns="com-wordpress:feed-additions:1">98893</post-id>	</item>
+		<item>
+		<title>Migrating the GitHub Copilot runtime to Rust, using Copilot</title>
+		<link>https://github.blog/ai-and-ml/generative-ai/migrating-the-github-copilot-runtime-to-rust-using-copilot/</link>
+		
+		<dc:creator>Stephen Toub</dc:creator>
+		<pubDate>Thu, 17 Sep 2026 00:26:43 +0000</pubDate>
+				<category>AI &amp; ML</category>
+		<category>Generative AI</category>
+		<category>GitHub Copilot</category>
+		<category>AI agents</category>
+		<category>developer experience</category>
+		<category>Rust</category>
+		<category>technical deep dive</category>
+		<guid isPermaLink="false">https://github.blog/?p=98713</guid>
+
+					<description>&lt;p&gt;A rewrite this size wasn't affordable before agents. Here's what porting the Copilot agent runtime to 800,000 lines of production Rust actually took.&lt;/p&gt;
+&lt;p&gt;The post &lt;a href="https://github.blog/ai-and-ml/generative-ai/migrating-the-github-copilot-runtime-to-rust-using-copilot/"&gt;Migrating the Git…</description>
+										<content:encoded>&lt;!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd"&gt;
+&lt;html&gt;&lt;body&gt;&lt;p class="wp-block-paragraph"&gt;The&amp;nbsp;&lt;a href="https://github.com/features/copilot/cli/"&gt;GitHub Copilot CLI&lt;/a&gt;,&amp;nbsp;&lt;a href="https://github.com/features/ai/github-app"&gt;GitHub Cop…</content:encoded>
+					
+		
+		
+		<post-id xmlns="com-wordpress:feed-additions:1">98713</post-id>	</item>
+		<item>
+		<title>Marketing ops as code: Automating events from planning to follow-up on GitHub</title>
+		<link>https://github.blog/ai-and-ml/github-copilot/marketing-ops-as-code-automating-events-from-planning-to-follow-up-on-github/</link>
+		
+		<dc:creator>Tomoko Tanaka</dc:creator>
+		<pubDate>Fri, 11 Sep 2026 18:26:10 +0000</pubDate>
+				<category>AI &amp; ML</category>
+		<category>GitHub Copilot</category>
+		<category>automation</category>
+		<category>GitHub Actions</category>
+		<category>GitHub Issues</category>
+		<guid isPermaLink="false">https://github.blog/?p=98799</guid>
+
+					<description>&lt;p&gt;If you can write down how you do your work, you can automate it. Here's what I did to support GitHub's APAC marketing team.&lt;/p&gt;
+&lt;p&gt;The post &lt;a href="https://github.blog/ai-and-ml/github-copilot/marketing-ops-as-code-automating-events-from-planning-to-follow-up-on-github/"&gt;Marketing ops as code: A…</description>
+										<content:encoded>&lt;!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd"&gt;
+&lt;html&gt;&lt;body&gt;&lt;p class="wp-block-paragraph"&gt;I run marketing for GitHub in Japan and Korea, and events are the heartbeat of it: a recurring webinar series for enterprise developers, community meet…</content:encoded>
+					
+		
+		
+		<post-id xmlns="com-wordpress:feed-additions:1">98799</post-id>	</item>
+	</channel>
+</rss>

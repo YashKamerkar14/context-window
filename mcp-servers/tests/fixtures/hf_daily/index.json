@@ -1,0 +1,16 @@
+{
+ "meta": {
+  "recorded_at": "2026-10-08T18:48:52+00:00"
+ },
+ "exchanges": [
+  {
+   "url": "https://huggingface.co/api/daily_papers?limit=10",
+   "status": 200,
+   "headers": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "body_file": "00.json",
+   "gzip": true
+  }
+ ]
+}

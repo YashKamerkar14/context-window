@@ -1,0 +1,16 @@
+{
+ "meta": {
+  "recorded_at": "2026-10-08T18:48:46+00:00"
+ },
+ "exchanges": [
+  {
+   "url": "https://github.blog/ai-and-ml/feed/",
+   "status": 200,
+   "headers": {
+    "content-type": "application/rss+xml; charset=UTF-8"
+   },
+   "body_file": "00.xml",
+   "gzip": true
+  }
+ ]
+}

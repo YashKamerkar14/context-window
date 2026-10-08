@@ -1,0 +1,546 @@
+{
+ "exhaustive": {
+  "nbHits": true,
+  "typo": true
+ },
+ "exhaustiveNbHits": true,
+ "exhaustiveTypo": true,
+ "hits": [
+  {
+   "_highlightResult": {
+    "author": {
+     "matchLevel": "none",
+     "matchedWords": [],
+     "value": "speckx"
+    },
+    "title": {
+     "fullyHighlighted": false,
+     "matchLevel": "full",
+     "matchedWords": [
+      "ai"
+     ],
+     "value": "Meta and Microsoft take steps to reduce employee usage of Claude <em>AI</em>"
+    },
+    "url": {
+     "fullyHighlighted": false,
+     "matchLevel": "full",
+     "matchedWords": [
+      "ai"
+     ],
+     "value": "https://www.rswebsols.com/news/meta-and-microsoft-take-steps-to-reduce-employee-usage-of-claude-<em>ai</em>/"
+    }
+   },
+   "_tags": [
+    "story",
+    "author_speckx",
+    "story_49997161"
+   ],
+   "author": "speckx",
+   "children": [
+    49997575,
+    49999778,
+    49997555,
+    49997757,
+    49998230,
+    50001735,
+    49997485,
+    49997738,
+    50002303,
+    49999619
+   ],
+   "created_at": "2026-10-07T18:49:40Z",
+   "created_at_i": 1791398980,
+   "num_comments": 378,
+   "objectID": "49997161",
+   "points": 361,
+   "story_id": 49997161,
+   "title": "Meta and Microsoft take steps to reduce employee usage of Claude AI",
+   "updated_at": "2026-10-08T18:47:55Z",
+   "url": "https://www.rswebsols.com/news/meta-and-microsoft-take-steps-to-reduce-employee-usage-of-claude-ai/"
+  },
+  {
+   "_highlightResult": {
+    "author": {
+     "matchLevel": "none",
+     "matchedWords": [],
+     "value": "screm"
+    },
+    "story_text": {
+     "matchLevel": "none",
+     "matchedWords": [],
+     "value": "Hi HN!<p>I\u2019m Louis, Co-Founder of Armature (YC P26), where we help teams make their product discoverable and usable by coding agents. We already measured 50k+ agent sessions and realized that over and over agents would encounter the exact same limitations on different tasks using the same tool. So we wondered why these weren\u2019t fixed. And the answer is simple: the feedback loop just doesn\u2019t exist between agents and software vendors but also between different agents. Humans can share their experience on platforms like <a href=\"https://g2.com\" rel=\"nofollow\">https://g2.com</a> and <a href=\"https://trustpilot.com\" rel=\"nofollow\">https://trustpilot.com</a>, but agents have nowhere to.<p>So we created: <a href=\"https://agent.reviews\" rel=\"nofollow\">https://agent.reviews</a>: the G2 for agents.<p>It works with a set of skills and an npm CLI (@armature-tech/agent-reviews) connecting agents to our API endpoints. Anyone can ask their agent (Claude Code, Codex, Cursor, etc.) to install it, and ag\u2026"
+    },
+    "title": {
+     "fullyHighlighted": false,
+     "matchLevel": "full",
+     "matchedWords": [
+      "ai"
+     ],
+     "value": "Show HN: Agent.reviews \u2013 Where <em>AI</em> agents read and write reviews on tools"
+    },
+    "url": {
+     "matchLevel": "none",
+     "matchedWords": [],
+     "value": "https://agent.reviews/"
+    }
+   },
+   "_tags": [
+    "story",
+    "author_screm",
+    "story_49995539",
+    "show_hn"
+   ],
+   "author": "screm",
+   "children": [
+    50003595,
+    50000768,
+    49998015,
+    50000848,
+    49997782,
+    49997809,
+    49997827,
+    49998124,
+    50001334,
+    49997459
+   ],
+   "created_at": "2026-10-07T16:59:11Z",
+   "created_at_i": 1791392351,
+   "num_comments": 47,
+   "objectID": "49995539",
+   "points": 65,
+   "story_id": 49995539,
+   "story_text": "Hi HN!<p>I\u2019m Louis, Co-Founder of Armature (YC P26), where we help teams make their product discoverable and usable by coding agents. We already measured 50k+ agent sessions and realized that over and over agents would encounter the exact same limitations on different tasks using the same tool. So we wondered why these weren\u2019t fixed. And the answer is simple: the feedback loop just doesn\u2019t exist between agents and software vendors but also between different agents. Humans can share their experience on platforms like <a href=\"https:&#x2F;&#x2F;g2.com\" rel=\"nofollow\">https:&#x2F;&#x2F;g2.com</a> and <a href=\"https:&#x2F;&#x2F;trustpilot.com\" rel=\"nofollow\">https:&#x2F;&#x2F;trustpilot.com</a>, but agents have nowhere to.<p>So we created: <a href=\"https:&#x2F;&#x2F;agent.reviews\" rel=\"nofollow\">https:&#x2F;&#x2F;agent.reviews</a>: the G2 for agents.<p>It works with a set of skills and an npm CLI (@armature-tech&#x2F;agent-reviews) connecting agents to our API endpoints. Anyone can ask the\u2026",
+   "title": "Show HN: Agent.reviews \u2013 Where AI agents read and write reviews on tools",
+   "updated_at": "2026-10-08T18:46:12Z",
+   "url": "https://agent.reviews/"
+  },
+  {
+   "_highlightResult": {
+    "author": {
+     "matchLevel": "none",
+     "matchedWords": [],
+     "value": "sbulaev"
+    },
+    "title": {
+     "matchLevel": "none",
+     "matchedWords": [],
+     "value": "Study: Claude, ChatGPT Offer Different Shopping Prices Based on Wealth"
+    },
+    "url": {
+     "fullyHighlighted": false,
+     "matchLevel": "full",
+     "matchedWords": [
+      "ai"
+     ],
+     "value": "https://www.bloomberg.com/news/newsletters/2026-10-07/study-claude-chatgpt-<em>ai</em>-bots-offer-different-shopping-prices-based-on-wealth"
+    }
+   },
+   "_tags": [
+    "story",
+    "author_sbulaev",
+    "story_49994746"
+   ],
+   "author": "sbulaev",
+   "children": [
+    49995708,
+    49995702,
+    49995751,
+    49996518,
+    49995733,
+    49996080,
+    49996681,
+    49995810,
+    50000182,
+    49995323
+   ],
+   "created_at": "2026-10-07T16:07:08Z",
+   "created_at_i": 1791389228,
+   "num_comments": 38,
+   "objectID": "49994746",
+   "points": 97,
+   "story_id": 49994746,
+   "title": "Study: Claude, ChatGPT Offer Different Shopping Prices Based on Wealth",
+   "updated_at": "2026-10-08T18:32:11Z",
+   "url": "https://www.bloomberg.com/news/newsletters/2026-10-07/study-claude-chatgpt-ai-bots-offer-different-shopping-prices-based-on-wealth"
+  },
+  {
+   "_highlightResult": {
+    "author": {
+     "matchLevel": "none",
+     "matchedWords": [],
+     "value": "ilreb"
+    },
+    "story_text": {
+     "fullyHighlighted": false,
+     "matchLevel": "full",
+     "matchedWords": [
+      "ai"
+     ],
+     "value": "<a href=\"https://blog.google/innovation-and-ai/models-and-research/google-deepmind/synth-id-ai-content/\" rel=\"nofollow\">https://blog.google/innovation-and-<em>ai</em>/models-and-research/go...</a>"
+    },
+    "title": {
+     "matchLevel": "none",
+     "matchedWords": [],
+     "value": "SynthID Detector"
+    },
+    "url": {
+     "matchLevel": "none",
+     "matchedWords": [],
+     "value": "https://synthid.com/"
+    }
+   },
+   "_tags": [
+    "story",
+    "author_ilreb",
+    "story_49993188"
+   ],
+   "author": "ilreb",
+   "children": [
+    50000775,
+    49994064,
+    49993881,
+    49993455,
+    50002402,
+    49993715,
+    49994123,
+    49993983,
+    49996875,
+    49998736
+   ],
+   "created_at": "2026-10-07T14:16:44Z",
+   "created_at_i": 1791382604,
+   "num_comments": 97,
+   "objectID": "49993188",
+   "points": 123,
+   "story_id": 49993188,
+   "story_text": "<a href=\"https:&#x2F;&#x2F;blog.google&#x2F;innovation-and-ai&#x2F;models-and-research&#x2F;google-deepmind&#x2F;synth-id-ai-content&#x2F;\" rel=\"nofollow\">https:&#x2F;&#x2F;blog.google&#x2F;innovation-and-ai&#x2F;models-and-research&#x2F;go...</a>",
+   "title": "SynthID Detector",
+   "updated_at": "2026-10-08T18:17:39Z",
+   "url": "https://synthid.com/"
+  },
+  {
+   "_highlightResult": {
+    "author": {
+     "matchLevel": "none",
+     "matchedWords": [],
+     "value": "bluepeter"
+    },
+    "title": {
+     "fullyHighlighted": false,
+     "matchLevel": "full",
+     "matchedWords": [
+      "ai"
+     ],
+     "value": "<em>AI</em>-assisted proof of optimal packing for 11 squares"
+    },
+    "url": {
+     "matchLevel": "none",
+     "matchedWords": [],
+     "value": "https://github.com/Queuingtheorydotcom/11SquaresFormalized"
+    }
+   },
+   "_tags": [
+    "story",
+    "author_bluepeter",
+    "story_49993121"
+   ],
+   "author": "bluepeter",
+   "children": [
+    49994282,
+    49995686,
+    49997321,
+    49993831,
+    50006833,
+    49993415,
+    49993825,
+    49997613,
+    49995620,
+    49993528
+   ],
+   "created_at": "2026-10-07T14:10:55Z",
+   "created_at_i": 1791382255,
+   "num_comments": 54,
+   "objectID": "49993121",
+   "points": 116,
+   "story_id": 49993121,
+   "title": "AI-assisted proof of optimal packing for 11 squares",
+   "updated_at": "2026-10-08T16:45:25Z",
+   "url": "https://github.com/Queuingtheorydotcom/11SquaresFormalized"
+  },
+  {
+   "_highlightResult": {
+    "author": {
+     "matchLevel": "none",
+     "matchedWords": [],
+     "value": "acossta"
+    },
+    "story_text": {
+     "matchLevel": "none",
+     "matchedWords": [],
+     "value": "<a href=\"https://labs.google/playground\" rel=\"nofollow\">https://labs.google/playground</a>"
+    },
+    "title": {
+     "matchLevel": "none",
+     "matchedWords": [],
+     "value": "Google Playground: Create and play custom games"
+    },
+    "url": {
+     "fullyHighlighted": false,
+     "matchLevel": "full",
+     "matchedWords": [
+      "ai"
+     ],
+     "value": "https://blog.google/innovation-and-<em>ai</em>/technology/<em>ai</em>/playground-experimental-gaming-platform/"
+    }
+   },
+   "_tags": [
+    "story",
+    "author_acossta",
+    "story_49991823"
+   ],
+   "author": "acossta",
+   "children": [
+    49999381,
+    49992591,
+    49992552,
+    49993470,
+    49993449,
+    49993264,
+    49995165,
+    49993538,
+    49995210,
+    49993409
+   ],
+   "created_at": "2026-10-07T12:28:36Z",
+   "created_at_i": 1791376116,
+   "num_comments": 230,
+   "objectID": "49991823",
+   "points": 154,
+   "story_id": 49991823,
+   "story_text": "<a href=\"https:&#x2F;&#x2F;labs.google&#x2F;playground\" rel=\"nofollow\">https:&#x2F;&#x2F;labs.google&#x2F;playground</a>",
+   "title": "Google Playground: Create and play custom games",
+   "updated_at": "2026-10-08T18:45:14Z",
+   "url": "https://blog.google/innovation-and-ai/technology/ai/playground-experimental-gaming-platform/"
+  },
+  {
+   "_highlightResult": {
+    "author": {
+     "matchLevel": "none",
+     "matchedWords": [],
+     "value": "signa11"
+    },
+    "title": {
+     "fullyHighlighted": false,
+     "matchLevel": "full",
+     "matchedWords": [
+      "ai"
+     ],
+     "value": "Reasons to Dislike <em>AI</em> Coding"
+    },
+    "url": {
+     "fullyHighlighted": false,
+     "matchLevel": "full",
+     "matchedWords": [
+      "ai"
+     ],
+     "value": "https://www.sicpers.info/2026/10/reasons-to-dislike-<em>ai</em>-coding/"
+    }
+   },
+   "_tags": [
+    "story",
+    "author_signa11",
+    "story_49990204"
+   ],
+   "author": "signa11",
+   "children": [
+    49990675,
+    49990469,
+    49990528,
+    49990597,
+    49990501,
+    50008809,
+    49990486,
+    50002203,
+    49992425,
+    49990435
+   ],
+   "created_at": "2026-10-07T09:15:00Z",
+   "created_at_i": 1791364500,
+   "num_comments": 109,
+   "objectID": "49990204",
+   "points": 77,
+   "story_id": 49990204,
+   "title": "Reasons to Dislike AI Coding",
+   "updated_at": "2026-10-08T18:44:25Z",
+   "url": "https://www.sicpers.info/2026/10/reasons-to-dislike-ai-coding/"
+  },
+  {
+   "_highlightResult": {
+    "author": {
+     "matchLevel": "none",
+     "matchedWords": [],
+     "value": "brugidou"
+    },
+    "title": {
+     "fullyHighlighted": false,
+     "matchLevel": "full",
+     "matchedWords": [
+      "ai"
+     ],
+     "value": "Forever junior: Skills <em>AI</em> can't develop for you"
+    },
+    "url": {
+     "fullyHighlighted": false,
+     "matchLevel": "full",
+     "matchedWords": [
+      "ai"
+     ],
+     "value": "https://tech.criteo.com/blog/human-skills-<em>ai</em>-cant-develop-junior-engineers/"
+    }
+   },
+   "_tags": [
+    "story",
+    "author_brugidou",
+    "story_49989684"
+   ],
+   "author": "brugidou",
+   "children": [
+    49991773,
+    49993111,
+    49991888,
+    49991887,
+    49991519,
+    49992141,
+    49991377,
+    49992790,
+    49992674,
+    49992899
+   ],
+   "created_at": "2026-10-07T08:00:06Z",
+   "created_at_i": 1791360006,
+   "num_comments": 59,
+   "objectID": "49989684",
+   "points": 78,
+   "story_id": 49989684,
+   "title": "Forever junior: Skills AI can't develop for you",
+   "updated_at": "2026-10-08T18:48:41Z",
+   "url": "https://tech.criteo.com/blog/human-skills-ai-cant-develop-junior-engineers/"
+  },
+  {
+   "_highlightResult": {
+    "author": {
+     "matchLevel": "none",
+     "matchedWords": [],
+     "value": "ilreb"
+    },
+    "title": {
+     "fullyHighlighted": false,
+     "matchLevel": "full",
+     "matchedWords": [
+      "ai"
+     ],
+     "value": "Show HN: NanoMuse \u2013 An open-source <em>AI</em> agent for your phone and computer"
+    },
+    "url": {
+     "matchLevel": "none",
+     "matchedWords": [],
+     "value": "https://github.com/nano-muse/nanoMuse"
+    }
+   },
+   "_tags": [
+    "story",
+    "author_ilreb",
+    "story_49987765",
+    "show_hn"
+   ],
+   "author": "ilreb",
+   "children": [
+    49989579,
+    49991152,
+    49989928,
+    49994928,
+    49990553,
+    49991328,
+    49989739,
+    49990108,
+    49988270,
+    49991273
+   ],
+   "created_at": "2026-10-07T03:30:44Z",
+   "created_at_i": 1791343844,
+   "num_comments": 21,
+   "objectID": "49987765",
+   "points": 59,
+   "story_id": 49987765,
+   "title": "Show HN: NanoMuse \u2013 An open-source AI agent for your phone and computer",
+   "updated_at": "2026-10-08T18:46:12Z",
+   "url": "https://github.com/nano-muse/nanoMuse"
+  },
+  {
+   "_highlightResult": {
+    "author": {
+     "matchLevel": "none",
+     "matchedWords": [],
+     "value": "thoughtpeddler"
+    },
+    "title": {
+     "fullyHighlighted": false,
+     "matchLevel": "full",
+     "matchedWords": [
+      "ai"
+     ],
+     "value": "South Korea says <em>AI</em> agents appear to have been used to hack the country's banks"
+    },
+    "url": {
+     "fullyHighlighted": false,
+     "matchLevel": "full",
+     "matchedWords": [
+      "ai"
+     ],
+     "value": "https://www.reuters.com/world/south-koreas-lee-says-<em>ai</em>-appears-have-been-used-bank-hacks-2026-10-06/"
+    }
+   },
+   "_tags": [
+    "story",
+    "author_thoughtpeddler",
+    "story_49985861"
+   ],
+   "author": "thoughtpeddler",
+   "children": [
+    49988990,
+    50008500,
+    49986945,
+    49989375,
+    49987039,
+    49987655,
+    49987785,
+    49994079,
+    49987010,
+    49990791
+   ],
+   "created_at": "2026-10-06T23:50:33Z",
+   "created_at_i": 1791330633,
+   "num_comments": 32,
+   "objectID": "49985861",
+   "points": 100,
+   "story_id": 49985861,
+   "title": "South Korea says AI agents appear to have been used to hack the country's banks",
+   "updated_at": "2026-10-08T17:41:56Z",
+   "url": "https://www.reuters.com/world/south-koreas-lee-says-ai-appears-have-been-used-bank-hacks-2026-10-06/"
+  }
+ ],
+ "hitsPerPage": 10,
+ "nbHits": 13,
+ "nbPages": 2,
+ "page": 0,
+ "params": "query=AI&hitsPerPage=10&numericFilters=created_at_i%3E%3D1791312525%2Cpoints%3E%3D50&tags=story&advancedSyntax=true&analyticsTags=backend",
+ "processingTimeMS": 1,
+ "processingTimingsMS": {
+  "_request": {
+   "roundTrip": 15
+  },
+  "total": 1
+ },
+ "query": "AI",
+ "serverTimeMS": 1
+}

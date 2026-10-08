@@ -1,0 +1,174 @@
+<?xml version='1.0' encoding='utf-8'?>
+<feed xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns="http://www.w3.org/2005/Atom">
+  <id>https://arxiv.org/api/PjsC9kU2LGEEItxPx6suJhqxHBc</id>
+  <title>arXiv Query: search_query=cat:cs.CL OR cat:cs.AI&amp;id_list=&amp;start=0&amp;max_results=5</title>
+  <updated>2026-10-08T18:48:50Z</updated>
+  <link href="https://arxiv.org/api/query?search_query=cat:cs.CL+OR+cat:cs.AI&amp;start=0&amp;max_results=5&amp;id_list=" type="application/atom+xml"/>
+  <opensearch:itemsPerPage>5</opensearch:itemsPerPage>
+  <opensearch:totalResults>283385</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <entry>
+    <id>http://arxiv.org/abs/2610.10538v1</id>
+    <title>Never Look Back: Understanding Persistence in 3D Object Memory from Egocentric Videos</title>
+    <updated>2026-10-07T17:59:41Z</updated>
+    <link href="https://arxiv.org/abs/2610.10538v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2610.10538v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>As we move through the world and carry out everyday tasks, we encounter objects that may become relevant only later. We are capable of recalling where we left something or what was inside a container, even without knowing we would need it later. Here, we study how an embodied assistant can build a s…</summary>
+    <category term="cs.CV" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.RO" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-10-07T17:59:41Z</published>
+    <arxiv:comment>Project page: https://ledger-3d.github.io . Code: https://github.com/LEDGER-3D/LEDGER</arxiv:comment>
+    <arxiv:primary_category term="cs.CV"/>
+    <author>
+      <name>Shravan Chaudhari</name>
+    </author>
+    <author>
+      <name>William Paul</name>
+    </author>
+    <author>
+      <name>Suchi Saria</name>
+    </author>
+    <author>
+      <name>Rama Chellappa</name>
+    </author>
+    <author>
+      <name>Homanga Bharadhwaj</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2610.10536v1</id>
+    <title>Decoupling Exploration from Optimization in RLVR</title>
+    <updated>2026-10-07T17:59:26Z</updated>
+    <link href="https://arxiv.org/abs/2610.10536v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2610.10536v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Modern language models undergo reinforcement learning with verifiable rewards (RLVR) on top of already-trained checkpoints. A key promise of RLVR is the discovery of new reasoning strategies. In principle, a model can sample novel ideas absent from its prior training data. In practice, however, augm…</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-10-07T17:59:26Z</published>
+    <arxiv:comment>20 pages, 16 figures, 9 tables. Code: https://github.com/SaifPunjwani/Exploration-Distillation. Checkpoints: https://huggingface.co/SaifPunjwani/expdis-checkpoints</arxiv:comment>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Saif Punjwani</name>
+    </author>
+    <author>
+      <name>Micah Goldblum</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2610.10533v1</id>
+    <title>EngramEdit: Decoupled Knowledge Updates in LLMs through Conditional Memory</title>
+    <updated>2026-10-07T17:58:52Z</updated>
+    <link href="https://arxiv.org/abs/2610.10533v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2610.10533v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Conditional memory architectures such as DeepSeek Engram use input n-grams to look up learned embeddings, expanding the capacity of large language models (LLMs) with limited additional computation. Beyond model scaling, this architecture has demonstrated the potential to decouple factual knowledge s…</summary>
+    <category term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-10-07T17:58:52Z</published>
+    <arxiv:primary_category term="cs.CL"/>
+    <author>
+      <name>Hongru Cai</name>
+    </author>
+    <author>
+      <name>Ran Wei</name>
+    </author>
+    <author>
+      <name>Wenjie Wang</name>
+    </author>
+    <author>
+      <name>Chengfa Wu</name>
+    </author>
+    <author>
+      <name>Ning Song</name>
+    </author>
+    <author>
+      <name>Yongqi Li</name>
+    </author>
+    <author>
+      <name>Wenjie Li</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2610.10528v1</id>
+    <title>Long-WAM: Scaling the Context of World-Action Models</title>
+    <updated>2026-10-07T17:58:04Z</updated>
+    <link href="https://arxiv.org/abs/2610.10528v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2610.10528v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Real-time robot control demands enough visual history to infer motion and task progress, but processing that history can delay action. We present Long-WAM, a model-system framework for scaling the context of causal world-action models under real-time control constraints. Our central finding is that …</summary>
+    <category term="cs.RO" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.CV" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-10-07T17:58:04Z</published>
+    <arxiv:primary_category term="cs.RO"/>
+    <author>
+      <name>Wei Huang</name>
+    </author>
+    <author>
+      <name>Bohan Zhang</name>
+    </author>
+    <author>
+      <name>Chenzhi Liu</name>
+    </author>
+    <author>
+      <name>Isabella Liu</name>
+    </author>
+    <author>
+      <name>Shuai Yang</name>
+    </author>
+    <author>
+      <name>Weian Mao</name>
+    </author>
+    <author>
+      <name>Luozhou Wang</name>
+    </author>
+    <author>
+      <name>Yicheng Xiao</name>
+    </author>
+    <author>
+      <name>Weifeng Lin</name>
+    </author>
+    <author>
+      <name>Qixin Hu</name>
+    </author>
+    <author>
+      <name>Bryan Chu</name>
+    </author>
+    <author>
+      <name>Sifei Liu</name>
+    </author>
+    <author>
+      <name>Linxi Fan</name>
+    </author>
+    <author>
+      <name>Xiaojuan Qi</name>
+    </author>
+    <author>
+      <name>Song Han</name>
+    </author>
+    <author>
+      <name>Yukang Chen</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2610.10526v1</id>
+    <title>Rephrase Before You Act: Characterizing and Mitigating Language Sensitivity in Vision-Language-Action Models</title>
+    <updated>2026-10-07T17:57:38Z</updated>
+    <link href="https://arxiv.org/abs/2610.10526v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2610.10526v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Vision-language-action models (VLAs) are strikingly sensitive to instruction phrasing and do not inherit the language robustness of the vision-language models they are built on. A one-word edit can move success by tens of points: $π_{0.5}$ turns on a LIBERO stove 100% of the time for "switch on the …</summary>
+    <category term="cs.RO" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-10-07T17:57:38Z</published>
+    <arxiv:comment>9 pages, 8 figures, 3 tables. Project page: https://sttawm.github.io/rephrase-before-you-act</arxiv:comment>
+    <arxiv:primary_category term="cs.RO"/>
+    <author>
+      <name>Mikey Watts</name>
+      <arxiv:affiliation>Independent Researcher</arxiv:affiliation>
+    </author>
+    <author>
+      <name>Yuchen Cui</name>
+      <arxiv:affiliation>University of California, Los Angeles</arxiv:affiliation>
+    </author>
+  </entry>
+</feed>

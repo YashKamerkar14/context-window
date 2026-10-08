@@ -1,0 +1,16 @@
+{
+ "meta": {
+  "recorded_at": "2026-10-08T18:48:52+00:00"
+ },
+ "exchanges": [
+  {
+   "url": "https://hn.algolia.com/api/v1/search_by_date?hitsPerPage=10&numericFilters=created_at_i%3E%3D1791312525%2Cpoints%3E%3D50&query=AI&tags=story",
+   "status": 200,
+   "headers": {
+    "content-type": "application/json"
+   },
+   "body_file": "00.json",
+   "gzip": false
+  }
+ ]
+}

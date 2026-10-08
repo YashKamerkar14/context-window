@@ -1,0 +1,918 @@
+[
+ {
+  "paper": {
+   "id": "2610.05003",
+   "authors": [
+    {
+     "_id": "6ac6ff404eb8005165aed3eb",
+     "user": {
+      "_id": "6ac6fe8c9ce6eb4e7dd8868e",
+      "avatarUrl": "/avatars/4c72a755d285e76cc49047bd371f7bb5.svg",
+      "isPro": false,
+      "fullname": "Jiaxi (Jay) Liu",
+      "user": "jiaxi233",
+      "type": "user",
+      "name": "jiaxi233"
+     },
+     "name": "Jiaxi Liu",
+     "status": "claimed_verified",
+     "statusLastChangedAt": "2026-10-08T08:45:05.840Z",
+     "hidden": false
+    },
+    {
+     "_id": "6ac6ff404eb8005165aed3ec",
+     "name": "Hang Zhou",
+     "hidden": false
+    },
+    {
+     "_id": "6ac6ff404eb8005165aed3ed",
+     "name": "Hangyu Li",
+     "hidden": false
+    },
+    {
+     "_id": "6ac6ff404eb8005165aed3ee",
+     "name": "Yifan Wang",
+     "hidden": false
+    },
+    {
+     "_id": "6ac6ff404eb8005165aed3ef",
+     "name": "Keke Long",
+     "hidden": false
+    },
+    {
+     "_id": "6ac6ff404eb8005165aed3f0",
+     "name": "Chengyuan Ma",
+     "hidden": false
+    },
+    {
+     "_id": "6ac6ff404eb8005165aed3f1",
+     "name": "Bin Ran",
+     "hidden": false
+    },
+    {
+     "_id": "6ac6ff404eb8005165aed3f2",
+     "name": "Xiaopeng Li",
+     "hidden": false
+    }
+   ],
+   "publishedAt": "2026-10-04T00:00:00.000Z",
+   "submittedOnDailyAt": "2026-10-08T00:00:00.000Z",
+   "title": "How corner is a corner case? Percentile control for highway scenario generation",
+   "submittedOnDailyBy": {
+    "_id": "6ac6fe8c9ce6eb4e7dd8868e",
+    "avatarUrl": "/avatars/4c72a755d285e76cc49047bd371f7bb5.svg",
+    "isPro": false,
+    "fullname": "Jiaxi (Jay) Liu",
+    "user": "jiaxi233",
+    "type": "user",
+    "name": "jiaxi233"
+   },
+   "summary": "Generating corner-case scenarios with appropriate adversity in a simulation environment is critical for testing an autonomous vehicle (AV) software stack's safety performance before deployment. Existing autonomous-driving scenario generators can enforce specific behavior, adversity, or feasibility conditions, but they provide limited control over how extreme a generated scenario is relative to plausible futures in the same traffic context. This study represents the adversity of a generated scenario as its percentile in the conditional distribution of future risk given the observed history. This view supports calibrated answers to two questions: how \"corner\" a generated corner-case scenario is and how its \"cornerness\" can be fine-tuned.\n  To this end, we formulate history-conditioned risk-percentile requests and learn a reference risk distribution that maps each requested percentile to a physical risk target. We then use a percentile-conditioned joint diffusion model with sampling-time \u2026",
+   "upvotes": 0,
+   "discussionId": "6ac6ff404eb8005165aed3f3",
+   "projectPage": "https://hhjj233.github.io/CornerPercentile/",
+   "githubRepo": "https://github.com/hhjj233/P-control-SG",
+   "githubRepoAddedBy": "user"
+  },
+  "publishedAt": "2026-10-03T20:00:00.000Z",
+  "title": "How corner is a corner case? Percentile control for highway scenario generation",
+  "summary": "Generating corner-case scenarios with appropriate adversity in a simulation environment is critical for testing an autonomous vehicle (AV) software stack's safety performance before deployment. Existing autonomous-driving scenario generators can enforce specific behavior, adversity, or feasibility conditions, but they provide limited control over how extreme a generated scenario is relative to plausible futures in the same traffic context. This study represents the adversity of a generated scenario as its percentile in the conditional distribution of future risk given the observed history. This view supports calibrated answers to two questions: how \"corner\" a generated corner-case scenario is and how its \"cornerness\" can be fine-tuned.\n  To this end, we formulate history-conditioned risk-percentile requests and learn a reference risk distribution that maps each requested percentile to a physical risk target. We then use a percentile-conditioned joint diffusion model with sampling-time \u2026",
+  "thumbnail": "https://cdn-thumbnails.huggingface.co/social-thumbnails/papers/2610.05003.png",
+  "numComments": 1,
+  "submittedBy": {
+   "_id": "6ac6fe8c9ce6eb4e7dd8868e",
+   "avatarUrl": "/avatars/4c72a755d285e76cc49047bd371f7bb5.svg",
+   "fullname": "Jiaxi (Jay) Liu",
+   "name": "jiaxi233",
+   "type": "user",
+   "isPro": false,
+   "isHf": false,
+   "isHfAdmin": false,
+   "isMod": false,
+   "isUserFollowing": false
+  },
+  "isAuthorParticipating": true
+ },
+ {
+  "paper": {
+   "id": "2610.09484",
+   "authors": [
+    {
+     "_id": "6ac6e8a74eb8005165aed2b1",
+     "user": {
+      "_id": "61168739c47d4efbfa8be997",
+      "avatarUrl": "https://cdn-avatars.huggingface.co/v1/production/uploads/1628866336878-noauth.jpeg",
+      "isPro": false,
+      "fullname": "Phan Hoang",
+      "user": "phanviethoang1512",
+      "type": "user",
+      "name": "phanviethoang1512"
+     },
+     "name": "Hoang Phan",
+     "status": "claimed_verified",
+     "statusLastChangedAt": "2026-10-08T08:45:05.594Z",
+     "hidden": false
+    },
+    {
+     "_id": "6ac6e8a74eb8005165aed2b2",
+     "name": "Dat Huynh",
+     "hidden": false
+    },
+    {
+     "_id": "6ac6e8a74eb8005165aed2b3",
+     "name": "Andrey Zhmoginov",
+     "hidden": false
+    },
+    {
+     "_id": "6ac6e8a74eb8005165aed2b4",
+     "name": "Qi Zeng",
+     "hidden": false
+    },
+    {
+     "_id": "6ac6e8a74eb8005165aed2b5",
+     "name": "Wancen Mu",
+     "hidden": false
+    },
+    {
+     "_id": "6ac6e8a74eb8005165aed2b6",
+     "name": "Yue Cao",
+     "hidden": false
+    },
+    {
+     "_id": "6ac6e8a74eb8005165aed2b7",
+     "name": "Shengjie Bi",
+     "hidden": false
+    },
+    {
+     "_id": "6ac6e8a74eb8005165aed2b8",
+     "name": "Yun He",
+     "hidden": false
+    },
+    {
+     "_id": "6ac6e8a74eb8005165aed2b9",
+     "name": "Changdae Oh",
+     "hidden": false
+    },
+    {
+     "_id": "6ac6e8a74eb8005165aed2ba",
+     "name": "Deren Lei",
+     "hidden": false
+    }
+   ],
+   "mediaUrls": [
+    "https://cdn-uploads.huggingface.co/production/uploads/61168739c47d4efbfa8be997/Fg9aoxrNeBIneM0mg3IDl.png"
+   ],
+   "publishedAt": "2026-10-07T00:00:00.000Z",
+   "submittedOnDailyAt": "2026-10-08T00:00:00.000Z",
+   "title": "MIMESIS: Learning User Simulators as Training Environments for Interactive Agents",
+   "submittedOnDailyBy": {
+    "_id": "61168739c47d4efbfa8be997",
+    "avatarUrl": "https://cdn-avatars.huggingface.co/v1/production/uploads/1628866336878-noauth.jpeg",
+    "isPro": false,
+    "fullname": "Phan Hoang",
+    "user": "phanviethoang1512",
+    "type": "user",
+    "name": "phanviethoang1512"
+   },
+   "summary": "Training and evaluating interactive language agents typically requires rich user interactions, yet collecting human feedback is expensive and difficult to scale. Simulated users offer a scalable alternative, but they must both resemble real user behavior and provide useful learning experiences for agents. In contrast, most agent-training frameworks rely on off-the-shelf assistant LLMs, whose helpfulness can make them overly cooperative, explicit, and behaviorally homogeneous compared with real users. We introduce MIMESIS, a purpose-built user simulator trained on human conversations with explicit reasoning supervision and 13 realistic behavioral patterns derived from real user interactions. Empirically, our 9B model achieves a SOUL-Index of 65.7, surpassing the strongest frontier model. Compared with Claude-Opus-5, the strongest baseline on RealUserSim and SimulatorArena, MIMESIS improves behavioral fidelity by 13.4 points and reduces Turing distance by 3.6 points, respectively. We the\u2026",
+   "upvotes": 7,
+   "discussionId": "6ac6e8a84eb8005165aed2bb",
+   "projectPage": "https://github.com/VietHoang1512/mimesis",
+   "githubRepo": "https://github.com/VietHoang1512/mimesis",
+   "githubRepoAddedBy": "user",
+   "githubStars": 0,
+   "organization": {
+    "_id": "5e63d8713071d5be688861b8",
+    "name": "facebook",
+    "fullname": "AI at Meta",
+    "avatar": "https://cdn-avatars.huggingface.co/v1/production/uploads/1592839207516-noauth.png"
+   }
+  },
+  "publishedAt": "2026-10-06T20:00:00.000Z",
+  "title": "MIMESIS: Learning User Simulators as Training Environments for Interactive Agents",
+  "summary": "Training and evaluating interactive language agents typically requires rich user interactions, yet collecting human feedback is expensive and difficult to scale. Simulated users offer a scalable alternative, but they must both resemble real user behavior and provide useful learning experiences for agents. In contrast, most agent-training frameworks rely on off-the-shelf assistant LLMs, whose helpfulness can make them overly cooperative, explicit, and behaviorally homogeneous compared with real users. We introduce MIMESIS, a purpose-built user simulator trained on human conversations with explicit reasoning supervision and 13 realistic behavioral patterns derived from real user interactions. Empirically, our 9B model achieves a SOUL-Index of 65.7, surpassing the strongest frontier model. Compared with Claude-Opus-5, the strongest baseline on RealUserSim and SimulatorArena, MIMESIS improves behavioral fidelity by 13.4 points and reduces Turing distance by 3.6 points, respectively. We the\u2026",
+  "mediaUrls": [
+   "https://cdn-uploads.huggingface.co/production/uploads/61168739c47d4efbfa8be997/Fg9aoxrNeBIneM0mg3IDl.png"
+  ],
+  "thumbnail": "https://cdn-thumbnails.huggingface.co/social-thumbnails/papers/2610.09484.png",
+  "numComments": 1,
+  "submittedBy": {
+   "_id": "61168739c47d4efbfa8be997",
+   "avatarUrl": "https://cdn-avatars.huggingface.co/v1/production/uploads/1628866336878-noauth.jpeg",
+   "fullname": "Phan Hoang",
+   "name": "phanviethoang1512",
+   "type": "user",
+   "isPro": false,
+   "isHf": false,
+   "isHfAdmin": false,
+   "isMod": false,
+   "isUserFollowing": false
+  },
+  "organization": {
+   "_id": "5e63d8713071d5be688861b8",
+   "name": "facebook",
+   "fullname": "AI at Meta",
+   "avatar": "https://cdn-avatars.huggingface.co/v1/production/uploads/1592839207516-noauth.png"
+  },
+  "isAuthorParticipating": true
+ },
+ {
+  "paper": {
+   "id": "2610.09450",
+   "authors": [
+    {
+     "_id": "6ac7c13d4364a3d18a5cc405",
+     "name": "Hanqiu Li Cai",
+     "hidden": false
+    },
+    {
+     "_id": "6ac7c13d4364a3d18a5cc406",
+     "name": "Chema Garabito",
+     "hidden": false
+    }
+   ],
+   "mediaUrls": [
+    "https://cdn-uploads.huggingface.co/production/uploads/6828d5f2682a9738b94ef72f/oJwygz_RKi-H07YDvVBEr.mp4"
+   ],
+   "publishedAt": "2026-10-07T00:00:00.000Z",
+   "submittedOnDailyAt": "2026-10-08T00:00:00.000Z",
+   "title": "Iris-3B: Going Beyond the Latent with Pixel-Space Diffusion Training, Conversion and Fine-Tuning",
+   "submittedOnDailyBy": {
+    "_id": "6828d5f2682a9738b94ef72f",
+    "avatarUrl": "https://cdn-avatars.huggingface.co/v1/production/uploads/no-auth/G8WyQrC5sq6iD2Q8mN1kG.png",
+    "isPro": false,
+    "fullname": "Chema Garabito",
+    "user": "chgara",
+    "type": "user",
+    "name": "chgara"
+   },
+   "summary": "Pixel-space diffusion models avoid the lossy VAE of latent models, which suggests an advantage on downstream tasks where fine-grained detail matters. We test this claim along both routes to a pixel-space backbone. We pretrain Iris-3B, a 3B-parameter pixel-space text-to-image transformer, from scratch through a 256to512to1024 curriculum, after first ablating the prediction target and representation alignment at 256^2 to decide what to scale. We also convert a pretrained latent model, FLUX.2 Klein base 4B, to pixel space. We fine-tune both families for monocular depth estimation and for image restoration/super-resolution. We find no significant improvement from using a pixel-space generative prior. Fine-tuned for depth with one matched direct-regression recipe, Iris-3B is level with the latent FLUX.2 Klein and the converted pixel FLUX.2 Klein falls behind it, and on 4times DIV2K restoration neither pixel model beats a latent FLUX.2 Klein fine-tune, the converted one trailing it slightly.\u2026",
+   "upvotes": 6,
+   "discussionId": "6ac7c13d4364a3d18a5cc407",
+   "projectPage": "https://github.com/speridlabs/iris-3b",
+   "githubRepo": "https://github.com/speridlabs/iris-3b",
+   "githubRepoAddedBy": "user",
+   "githubStars": 3,
+   "organization": {
+    "_id": "6936db1f3eabe013bfe5cf9b",
+    "name": "speridlabs",
+    "fullname": "speridlabs",
+    "avatar": "https://cdn-avatars.huggingface.co/v1/production/uploads/6828d5f2682a9738b94ef72f/X6_QZmboVD5aFL4DdRy83.png"
+   }
+  },
+  "publishedAt": "2026-10-06T20:00:00.000Z",
+  "title": "Iris-3B: Going Beyond the Latent with Pixel-Space Diffusion Training, Conversion and Fine-Tuning",
+  "summary": "Pixel-space diffusion models avoid the lossy VAE of latent models, which suggests an advantage on downstream tasks where fine-grained detail matters. We test this claim along both routes to a pixel-space backbone. We pretrain Iris-3B, a 3B-parameter pixel-space text-to-image transformer, from scratch through a 256to512to1024 curriculum, after first ablating the prediction target and representation alignment at 256^2 to decide what to scale. We also convert a pretrained latent model, FLUX.2 Klein base 4B, to pixel space. We fine-tune both families for monocular depth estimation and for image restoration/super-resolution. We find no significant improvement from using a pixel-space generative prior. Fine-tuned for depth with one matched direct-regression recipe, Iris-3B is level with the latent FLUX.2 Klein and the converted pixel FLUX.2 Klein falls behind it, and on 4times DIV2K restoration neither pixel model beats a latent FLUX.2 Klein fine-tune, the converted one trailing it slightly.\u2026",
+  "mediaUrls": [
+   "https://cdn-uploads.huggingface.co/production/uploads/6828d5f2682a9738b94ef72f/oJwygz_RKi-H07YDvVBEr.mp4"
+  ],
+  "thumbnail": "https://cdn-thumbnails.huggingface.co/social-thumbnails/papers/2610.09450.png",
+  "numComments": 1,
+  "submittedBy": {
+   "_id": "6828d5f2682a9738b94ef72f",
+   "avatarUrl": "https://cdn-avatars.huggingface.co/v1/production/uploads/no-auth/G8WyQrC5sq6iD2Q8mN1kG.png",
+   "fullname": "Chema Garabito",
+   "name": "chgara",
+   "type": "user",
+   "isPro": false,
+   "isHf": false,
+   "isHfAdmin": false,
+   "isMod": false,
+   "followerCount": 1,
+   "isUserFollowing": false
+  },
+  "organization": {
+   "_id": "6936db1f3eabe013bfe5cf9b",
+   "name": "speridlabs",
+   "fullname": "speridlabs",
+   "avatar": "https://cdn-avatars.huggingface.co/v1/production/uploads/6828d5f2682a9738b94ef72f/X6_QZmboVD5aFL4DdRy83.png"
+  },
+  "isAuthorParticipating": false
+ },
+ {
+  "paper": {
+   "id": "2610.07258",
+   "authors": [
+    {
+     "_id": "6ac6ed584eb8005165aed2d2",
+     "user": {
+      "_id": "6ac6ec34550c6eb63399e863",
+      "avatarUrl": "/avatars/8593b95b6316404fed03cf4445306827.svg",
+      "isPro": false,
+      "fullname": "Venkata M Sangaraju",
+      "user": "sangaraju1988",
+      "type": "user",
+      "name": "sangaraju1988"
+     },
+     "name": "Venkata M Sangaraju",
+     "status": "claimed_verified",
+     "statusLastChangedAt": "2026-10-08T08:45:05.635Z",
+     "hidden": false
+    },
+    {
+     "_id": "6ac6ed584eb8005165aed2d3",
+     "name": "Sudhir Vissa",
+     "hidden": false
+    }
+   ],
+   "publishedAt": "2026-10-05T00:00:00.000Z",
+   "submittedOnDailyAt": "2026-10-08T00:00:00.000Z",
+   "title": "Lineage-Aware Memory Governance: A Derivation-Gated Framework for Privacy-Preserving Column-Level Access Control in Enterprise AI Agents",
+   "submittedOnDailyBy": {
+    "_id": "6ac6ec34550c6eb63399e863",
+    "avatarUrl": "/avatars/8593b95b6316404fed03cf4445306827.svg",
+    "isPro": false,
+    "fullname": "Venkata M Sangaraju",
+    "user": "sangaraju1988",
+    "type": "user",
+    "name": "sangaraju1988"
+   },
+   "summary": "Enterprise AI agents that share a memory store face two unaddressed risks: sensitive data can leak through legitimately computed results the requester could not derive, and departments can silently compute a same-named key performance indicator (KPI) through conflicting logic. Existing agent-memory systems (e.g., MemGPT, Zep, A-MEM) gate retrieval by content, ownership, and role, not derivation, missing a cached insight that embeds a forbidden column. We introduce the Analytical Memory Unit (AMU), a memory schema that attaches a full derivation (lineage) graph to every cached result, gated by a retrieval policy that serves a hit only when the requester is authorised for every column touched. Provided lineage recording is complete, we prove by construction that the policy blocks retrieval of results derived from a sensitive column outside the requester's permissions, at O(n) worst case -- a conditional design guarantee, not an empirical claim, that excludes derived features encoding sen\u2026",
+   "upvotes": 1,
+   "discussionId": "6ac6ed584eb8005165aed2d4",
+   "githubRepo": "https://github.com/sangaraju1988/Lineage-Aware-Memory",
+   "githubRepoAddedBy": "user",
+   "githubStars": 1
+  },
+  "publishedAt": "2026-10-04T20:00:00.000Z",
+  "title": "Lineage-Aware Memory Governance: A Derivation-Gated Framework for Privacy-Preserving Column-Level Access Control in Enterprise AI Agents",
+  "summary": "Enterprise AI agents that share a memory store face two unaddressed risks: sensitive data can leak through legitimately computed results the requester could not derive, and departments can silently compute a same-named key performance indicator (KPI) through conflicting logic. Existing agent-memory systems (e.g., MemGPT, Zep, A-MEM) gate retrieval by content, ownership, and role, not derivation, missing a cached insight that embeds a forbidden column. We introduce the Analytical Memory Unit (AMU), a memory schema that attaches a full derivation (lineage) graph to every cached result, gated by a retrieval policy that serves a hit only when the requester is authorised for every column touched. Provided lineage recording is complete, we prove by construction that the policy blocks retrieval of results derived from a sensitive column outside the requester's permissions, at O(n) worst case -- a conditional design guarantee, not an empirical claim, that excludes derived features encoding sen\u2026",
+  "thumbnail": "https://cdn-thumbnails.huggingface.co/social-thumbnails/papers/2610.07258.png",
+  "numComments": 1,
+  "submittedBy": {
+   "_id": "6ac6ec34550c6eb63399e863",
+   "avatarUrl": "/avatars/8593b95b6316404fed03cf4445306827.svg",
+   "fullname": "Venkata M Sangaraju",
+   "name": "sangaraju1988",
+   "type": "user",
+   "isPro": false,
+   "isHf": false,
+   "isHfAdmin": false,
+   "isMod": false,
+   "isUserFollowing": false
+  },
+  "isAuthorParticipating": true
+ },
+ {
+  "paper": {
+   "id": "2610.10460",
+   "authors": [
+    {
+     "_id": "6ac7c0634364a3d18a5cc3f2",
+     "name": "Hejian Sang",
+     "hidden": false
+    },
+    {
+     "_id": "6ac7c0634364a3d18a5cc3f3",
+     "name": "Zhengze Zhou",
+     "hidden": false
+    },
+    {
+     "_id": "6ac7c0634364a3d18a5cc3f4",
+     "name": "Shayan Mohajer Hamidi",
+     "hidden": false
+    },
+    {
+     "_id": "6ac7c0634364a3d18a5cc3f5",
+     "name": "Xiaomin Li",
+     "hidden": false
+    },
+    {
+     "_id": "6ac7c0634364a3d18a5cc3f6",
+     "name": "Rohit Jain",
+     "hidden": false
+    },
+    {
+     "_id": "6ac7c0634364a3d18a5cc3f7",
+     "name": "Alborz Geramifard",
+     "hidden": false
+    }
+   ],
+   "publishedAt": "2026-10-07T00:00:00.000Z",
+   "submittedOnDailyAt": "2026-10-08T00:00:00.000Z",
+   "title": "Composing What Each Teacher Learned: Multi-Teacher On-Policy Distillation through Teacher-Relative Shifts",
+   "submittedOnDailyBy": {
+    "_id": "646af200ca17a49700e94aa1",
+    "avatarUrl": "https://cdn-avatars.huggingface.co/v1/production/uploads/646af200ca17a49700e94aa1/7nqby5QEtLktCMrBCqwuo.jpeg",
+    "isPro": false,
+    "fullname": "Hejian Sang",
+    "user": "pb09204048",
+    "type": "user",
+    "name": "pb09204048"
+   },
+   "summary": "Multi-teacher on-policy distillation (MOPD) is used in two settings. In common-domain composition, several teachers score each student rollout from one prompt domain and their signals form a single target; in routed-domain distillation, prompts from different domains are assigned to the corresponding specialist. Both settings usually transfer each teacher's endpoint policy, which mixes what post-training changed with preferences inherited from the teacher's base. We introduce \u0394-MOPD, which transfers each teacher's teacher-minus-base logit shift re-anchored at the student's frozen initialization, and compare it with endpoint supervision in both settings while holding teacher selection fixed. We first expose the mechanism that impedes endpoint transfer: inherited base pull can exceed the post-training shift. Removing it reduces the teacher-term norm ratio and target--student KL.\n  Across our experiments, the results suggest that shift targets are particularly useful when teacher signals \u2026",
+   "upvotes": 5,
+   "discussionId": "6ac7c0634364a3d18a5cc3f8",
+   "organization": {
+    "_id": "6697e878d8b5b78e6e7485b7",
+    "name": "LinkedIn",
+    "fullname": "LinkedIn",
+    "avatar": "https://cdn-avatars.huggingface.co/v1/production/uploads/6697e834fd52271e0b9ce8d8/VSBDJkmYgk4-LeXgTKThN.png"
+   }
+  },
+  "publishedAt": "2026-10-06T20:00:00.000Z",
+  "title": "Composing What Each Teacher Learned: Multi-Teacher On-Policy Distillation through Teacher-Relative Shifts",
+  "summary": "Multi-teacher on-policy distillation (MOPD) is used in two settings. In common-domain composition, several teachers score each student rollout from one prompt domain and their signals form a single target; in routed-domain distillation, prompts from different domains are assigned to the corresponding specialist. Both settings usually transfer each teacher's endpoint policy, which mixes what post-training changed with preferences inherited from the teacher's base. We introduce \u0394-MOPD, which transfers each teacher's teacher-minus-base logit shift re-anchored at the student's frozen initialization, and compare it with endpoint supervision in both settings while holding teacher selection fixed. We first expose the mechanism that impedes endpoint transfer: inherited base pull can exceed the post-training shift. Removing it reduces the teacher-term norm ratio and target--student KL.\n  Across our experiments, the results suggest that shift targets are particularly useful when teacher signals \u2026",
+  "thumbnail": "https://cdn-thumbnails.huggingface.co/social-thumbnails/papers/2610.10460.png",
+  "numComments": 1,
+  "submittedBy": {
+   "_id": "646af200ca17a49700e94aa1",
+   "avatarUrl": "https://cdn-avatars.huggingface.co/v1/production/uploads/646af200ca17a49700e94aa1/7nqby5QEtLktCMrBCqwuo.jpeg",
+   "fullname": "Hejian Sang",
+   "name": "pb09204048",
+   "type": "user",
+   "isPro": false,
+   "isHf": false,
+   "isHfAdmin": false,
+   "isMod": false,
+   "followerCount": 12,
+   "isUserFollowing": false
+  },
+  "organization": {
+   "_id": "6697e878d8b5b78e6e7485b7",
+   "name": "LinkedIn",
+   "fullname": "LinkedIn",
+   "avatar": "https://cdn-avatars.huggingface.co/v1/production/uploads/6697e834fd52271e0b9ce8d8/VSBDJkmYgk4-LeXgTKThN.png"
+  },
+  "isAuthorParticipating": false
+ },
+ {
+  "paper": {
+   "id": "2609.38466",
+   "authors": [
+    {
+     "_id": "6ac7bb1651730a2c8afccf27",
+     "user": {
+      "_id": "673c86d3cfd6e90464a294e2",
+      "avatarUrl": "https://cdn-avatars.huggingface.co/v1/production/uploads/673c86d3cfd6e90464a294e2/_wbiQRqNw1VD2mutOKrrm.jpeg",
+      "isPro": false,
+      "fullname": "Chuqiao Li",
+      "user": "Coral79",
+      "type": "user",
+      "name": "Coral79"
+     },
+     "name": "Chuqiao Li",
+     "status": "claimed_verified",
+     "statusLastChangedAt": "2026-10-08T16:45:05.251Z",
+     "hidden": false
+    },
+    {
+     "_id": "6ac7bb1651730a2c8afccf28",
+     "name": "Xianghui Xie",
+     "hidden": false
+    },
+    {
+     "_id": "6ac7bb1651730a2c8afccf29",
+     "name": "Yong Cao",
+     "hidden": false
+    },
+    {
+     "_id": "6ac7bb1651730a2c8afccf2a",
+     "name": "Andreas Geiger",
+     "hidden": false
+    },
+    {
+     "_id": "6ac7bb1651730a2c8afccf2b",
+     "name": "Gerard Pons-Moll",
+     "hidden": false
+    }
+   ],
+   "mediaUrls": [
+    "https://cdn-uploads.huggingface.co/production/uploads/673c86d3cfd6e90464a294e2/JtgVD2SMLr0mUwiSEGfC2.mp4"
+   ],
+   "publishedAt": "2026-09-29T00:00:00.000Z",
+   "submittedOnDailyAt": "2026-10-08T00:00:00.000Z",
+   "title": "PAMI: Part Anchored Motion for Text to Human-Object Interaction Generation",
+   "submittedOnDailyBy": {
+    "_id": "673c86d3cfd6e90464a294e2",
+    "avatarUrl": "https://cdn-avatars.huggingface.co/v1/production/uploads/673c86d3cfd6e90464a294e2/_wbiQRqNw1VD2mutOKrrm.jpeg",
+    "isPro": false,
+    "fullname": "Chuqiao Li",
+    "user": "Coral79",
+    "type": "user",
+    "name": "Coral79"
+   },
+   "summary": "Text-conditioned full-body human-object interaction (HOI) generation requires synthesizing human motion and object trajectories that match the input text while remaining precisely coordinated over time. Most methods represent the human and object as separate trajectories and predict the global human-object couplings. Learning this complex, dynamically changing relationship implicitly, however, often yields object drift, missed contact, and penetration. We introduce PAMI, a Part-Anchored Motion framework for Interaction generation. Inspired by the classic Hough Transform, our key idea is to localize object motion by letting body-part anchors vote for it: we express object motion relative to multiple body-part anchors and use PamiVAE to learn an interaction latent space, decoding frame-wise weights that aggregate these part-specific votes. Building on this representation, PAMI generates interactions in a coarse-to-fine hierarchy. PamiGen first generates a coarse human-object interaction \u2026",
+   "upvotes": 1,
+   "discussionId": "6ac7bb1651730a2c8afccf2c",
+   "projectPage": "https://coral79.github.io/pami/",
+   "githubRepo": "https://github.com/Coral79/PAMI-Code",
+   "githubRepoAddedBy": "user",
+   "githubStars": 60
+  },
+  "publishedAt": "2026-09-28T20:00:00.000Z",
+  "title": "PAMI: Part Anchored Motion for Text to Human-Object Interaction Generation",
+  "summary": "Text-conditioned full-body human-object interaction (HOI) generation requires synthesizing human motion and object trajectories that match the input text while remaining precisely coordinated over time. Most methods represent the human and object as separate trajectories and predict the global human-object couplings. Learning this complex, dynamically changing relationship implicitly, however, often yields object drift, missed contact, and penetration. We introduce PAMI, a Part-Anchored Motion framework for Interaction generation. Inspired by the classic Hough Transform, our key idea is to localize object motion by letting body-part anchors vote for it: we express object motion relative to multiple body-part anchors and use PamiVAE to learn an interaction latent space, decoding frame-wise weights that aggregate these part-specific votes. Building on this representation, PAMI generates interactions in a coarse-to-fine hierarchy. PamiGen first generates a coarse human-object interaction \u2026",
+  "mediaUrls": [
+   "https://cdn-uploads.huggingface.co/production/uploads/673c86d3cfd6e90464a294e2/JtgVD2SMLr0mUwiSEGfC2.mp4"
+  ],
+  "thumbnail": "https://cdn-thumbnails.huggingface.co/social-thumbnails/papers/2609.38466.png",
+  "numComments": 1,
+  "submittedBy": {
+   "_id": "673c86d3cfd6e90464a294e2",
+   "avatarUrl": "https://cdn-avatars.huggingface.co/v1/production/uploads/673c86d3cfd6e90464a294e2/_wbiQRqNw1VD2mutOKrrm.jpeg",
+   "fullname": "Chuqiao Li",
+   "name": "Coral79",
+   "type": "user",
+   "isPro": false,
+   "isHf": false,
+   "isHfAdmin": false,
+   "isMod": false,
+   "isUserFollowing": false
+  },
+  "isAuthorParticipating": true
+ },
+ {
+  "paper": {
+   "id": "2610.09683",
+   "authors": [
+    {
+     "_id": "6ac71d914eb8005165aed59b",
+     "user": {
+      "_id": "6576b1a8eb4b4e0bcf788161",
+      "avatarUrl": "https://cdn-avatars.huggingface.co/v1/production/uploads/6576b1a8eb4b4e0bcf788161/YqkeRgMMJJPeeJd3OxrFy.png",
+      "isPro": false,
+      "fullname": "Gian Luca Bailo",
+      "user": "dexmac",
+      "type": "user",
+      "name": "dexmac"
+     },
+     "name": "Gian Luca Bailo",
+     "status": "claimed_verified",
+     "statusLastChangedAt": "2026-10-08T13:53:36.846Z",
+     "hidden": false
+    }
+   ],
+   "mediaUrls": [
+    "https://cdn-uploads.huggingface.co/production/uploads/6576b1a8eb4b4e0bcf788161/bEfWKwe4Lxkzr2GhrzSw2.png"
+   ],
+   "publishedAt": "2026-10-07T00:00:00.000Z",
+   "submittedOnDailyAt": "2026-10-08T00:00:00.000Z",
+   "title": "System Switch: When Should a Fast Decision Model Stop and Think?",
+   "submittedOnDailyBy": {
+    "_id": "6576b1a8eb4b4e0bcf788161",
+    "avatarUrl": "https://cdn-avatars.huggingface.co/v1/production/uploads/6576b1a8eb4b4e0bcf788161/YqkeRgMMJJPeeJd3OxrFy.png",
+    "isPro": false,
+    "fullname": "Gian Luca Bailo",
+    "user": "dexmac",
+    "type": "user",
+    "name": "dexmac"
+   },
+   "summary": "Dual-process agents pair a fast policy with a slow deliberative model. In real-time settings the slow model usually runs continuously; in turn-based agents and robot planners it is invoked on events such as uncertainty or a detected failure. We study a fast learned actor that takes every decision and hands control to a reasoning vision-language model only when a gate opens, while the game keeps running. We use closed-loop Doom and the new open \"System One\" typed-decision models, served through a common llama.cpp interface. On 900 held-out questions, (i) zero-shot decision models from 0.15B to 9B parameters choose to collect items 1.6-1.8 times more often than chance among their errors, in any option order, although the order changes some models' accuracy; (ii) accuracy, calibration and sensitivity (how well confidence separates right from wrong answers) are distinct: models of similar accuracy differ widely in AUROC, and the confidence of the most sensitive one tracks which kinds of si\u2026",
+   "upvotes": 0,
+   "discussionId": "6ac71d924eb8005165aed59c",
+   "projectPage": "https://medium.com/towards-artificial-intelligence/when-should-a-fast-ai-stop-and-think-56e202a0afdd",
+   "githubRepo": "https://github.com/dexmac221/system-switch",
+   "githubRepoAddedBy": "user",
+   "githubStars": 0
+  },
+  "publishedAt": "2026-10-06T20:00:00.000Z",
+  "title": "System Switch: When Should a Fast Decision Model Stop and Think?",
+  "summary": "Dual-process agents pair a fast policy with a slow deliberative model. In real-time settings the slow model usually runs continuously; in turn-based agents and robot planners it is invoked on events such as uncertainty or a detected failure. We study a fast learned actor that takes every decision and hands control to a reasoning vision-language model only when a gate opens, while the game keeps running. We use closed-loop Doom and the new open \"System One\" typed-decision models, served through a common llama.cpp interface. On 900 held-out questions, (i) zero-shot decision models from 0.15B to 9B parameters choose to collect items 1.6-1.8 times more often than chance among their errors, in any option order, although the order changes some models' accuracy; (ii) accuracy, calibration and sensitivity (how well confidence separates right from wrong answers) are distinct: models of similar accuracy differ widely in AUROC, and the confidence of the most sensitive one tracks which kinds of si\u2026",
+  "mediaUrls": [
+   "https://cdn-uploads.huggingface.co/production/uploads/6576b1a8eb4b4e0bcf788161/bEfWKwe4Lxkzr2GhrzSw2.png"
+  ],
+  "thumbnail": "https://cdn-thumbnails.huggingface.co/social-thumbnails/papers/2610.09683.png",
+  "numComments": 1,
+  "submittedBy": {
+   "_id": "6576b1a8eb4b4e0bcf788161",
+   "avatarUrl": "https://cdn-avatars.huggingface.co/v1/production/uploads/6576b1a8eb4b4e0bcf788161/YqkeRgMMJJPeeJd3OxrFy.png",
+   "fullname": "Gian Luca Bailo",
+   "name": "dexmac",
+   "type": "user",
+   "isPro": false,
+   "isHf": false,
+   "isHfAdmin": false,
+   "isMod": false,
+   "isUserFollowing": false
+  },
+  "isAuthorParticipating": true
+ },
+ {
+  "paper": {
+   "id": "2610.05324",
+   "authors": [
+    {
+     "_id": "6ac79433e86b96f168611749",
+     "user": {
+      "_id": "65c18ab454657fb13eee5af5",
+      "avatarUrl": "https://cdn-avatars.huggingface.co/v1/production/uploads/noauth/ITstc-hHZa2N84Y2203bl.png",
+      "isPro": false,
+      "fullname": "Zhuoqun Chen",
+      "user": "zhuoqun-chen",
+      "type": "user",
+      "name": "zhuoqun-chen"
+     },
+     "name": "Zhuoqun Chen",
+     "status": "claimed_verified",
+     "statusLastChangedAt": "2026-10-08T13:53:00.173Z",
+     "hidden": false
+    },
+    {
+     "_id": "6ac79433e86b96f16861174a",
+     "name": "Shucheng Jia",
+     "hidden": false
+    },
+    {
+     "_id": "6ac79433e86b96f16861174b",
+     "name": "Boyuan Chen",
+     "hidden": false
+    }
+   ],
+   "mediaUrls": [
+    "https://cdn-uploads.huggingface.co/production/uploads/65c18ab454657fb13eee5af5/2VDFNnyiOX5A1pVcFLTo0.jpeg"
+   ],
+   "publishedAt": "2026-10-04T00:00:00.000Z",
+   "submittedOnDailyAt": "2026-10-08T00:00:00.000Z",
+   "title": "CoDance: Learning Reactive and Compliant Human-Humanoid Interaction from Video",
+   "submittedOnDailyBy": {
+    "_id": "65c18ab454657fb13eee5af5",
+    "avatarUrl": "https://cdn-avatars.huggingface.co/v1/production/uploads/noauth/ITstc-hHZa2N84Y2203bl.png",
+    "isPro": false,
+    "fullname": "Zhuoqun Chen",
+    "user": "zhuoqun-chen",
+    "type": "user",
+    "name": "zhuoqun-chen"
+   },
+   "summary": "Partnered human-humanoid interaction couples locomotion with continuous physical contact. A humanoid needs to coordinate with a person's motion while responding to interaction forces and maintaining stable and natural movement. We present CoDance, a framework for learning reactive and compliant human-humanoid interaction from video. We study partnered dancing as a challenging instantiation, where a humanoid coordinates its footsteps with a moving partner and maintains continuous two-hand contact. Given a single video of two human dancers, CoDance retargets their motions into a robot reference and a moving partner. We introduce a multi-link compliance augmentation that transforms the kinematic demonstration into force-aware training data by adapting the robot reference under structured forces at both hands. Policies trained on this data follow the observed partner while preserving the demonstrated locomotion style and responding compliantly to physical interaction. In simulation, the po\u2026",
+   "upvotes": 2,
+   "discussionId": "6ac79433e86b96f16861174c",
+   "projectPage": "https://generalroboticslab.com/CoDance",
+   "githubRepo": "https://github.com/generalroboticslab/codance",
+   "githubRepoAddedBy": "user",
+   "githubStars": 5,
+   "organization": {
+    "_id": "693046d8083b2f4164718000",
+    "name": "DukeUniversity",
+    "fullname": "Duke University",
+    "avatar": "https://cdn-avatars.huggingface.co/v1/production/uploads/68e396f2b5bb631e9b2fac9a/NkJVTayAUcmhckCZ_3AMG.png"
+   }
+  },
+  "publishedAt": "2026-10-03T20:00:00.000Z",
+  "title": "CoDance: Learning Reactive and Compliant Human-Humanoid Interaction from Video",
+  "summary": "Partnered human-humanoid interaction couples locomotion with continuous physical contact. A humanoid needs to coordinate with a person's motion while responding to interaction forces and maintaining stable and natural movement. We present CoDance, a framework for learning reactive and compliant human-humanoid interaction from video. We study partnered dancing as a challenging instantiation, where a humanoid coordinates its footsteps with a moving partner and maintains continuous two-hand contact. Given a single video of two human dancers, CoDance retargets their motions into a robot reference and a moving partner. We introduce a multi-link compliance augmentation that transforms the kinematic demonstration into force-aware training data by adapting the robot reference under structured forces at both hands. Policies trained on this data follow the observed partner while preserving the demonstrated locomotion style and responding compliantly to physical interaction. In simulation, the po\u2026",
+  "mediaUrls": [
+   "https://cdn-uploads.huggingface.co/production/uploads/65c18ab454657fb13eee5af5/2VDFNnyiOX5A1pVcFLTo0.jpeg"
+  ],
+  "thumbnail": "https://cdn-thumbnails.huggingface.co/social-thumbnails/papers/2610.05324.png",
+  "numComments": 1,
+  "submittedBy": {
+   "_id": "65c18ab454657fb13eee5af5",
+   "avatarUrl": "https://cdn-avatars.huggingface.co/v1/production/uploads/noauth/ITstc-hHZa2N84Y2203bl.png",
+   "fullname": "Zhuoqun Chen",
+   "name": "zhuoqun-chen",
+   "type": "user",
+   "isPro": false,
+   "isHf": false,
+   "isHfAdmin": false,
+   "isMod": false,
+   "isUserFollowing": false
+  },
+  "organization": {
+   "_id": "693046d8083b2f4164718000",
+   "name": "DukeUniversity",
+   "fullname": "Duke University",
+   "avatar": "https://cdn-avatars.huggingface.co/v1/production/uploads/68e396f2b5bb631e9b2fac9a/NkJVTayAUcmhckCZ_3AMG.png"
+  },
+  "isAuthorParticipating": true
+ },
+ {
+  "paper": {
+   "id": "2610.10437",
+   "authors": [
+    {
+     "_id": "6ac7953ce86b96f16861174f",
+     "user": {
+      "_id": "688a928c2b88fe48e8b69bed",
+      "avatarUrl": "https://cdn-avatars.huggingface.co/v1/production/uploads/688a928c2b88fe48e8b69bed/uCNYR5b8swJG5mIoz4sP4.png",
+      "isPro": true,
+      "fullname": "Yonghoon Dong",
+      "user": "yonghoon96",
+      "type": "user",
+      "name": "yonghoon96"
+     },
+     "name": "Yonghoon Dong",
+     "status": "claimed_verified",
+     "statusLastChangedAt": "2026-10-08T13:52:58.150Z",
+     "hidden": false
+    },
+    {
+     "_id": "6ac7953ce86b96f168611750",
+     "name": "Minsung Yoon",
+     "hidden": false
+    },
+    {
+     "_id": "6ac7953ce86b96f168611751",
+     "name": "Jaehyuk Kim",
+     "hidden": false
+    },
+    {
+     "_id": "6ac7953ce86b96f168611752",
+     "name": "Jungwoo Park",
+     "hidden": false
+    },
+    {
+     "_id": "6ac7953ce86b96f168611753",
+     "name": "Changyeon Kim",
+     "hidden": false
+    },
+    {
+     "_id": "6ac7953ce86b96f168611754",
+     "name": "Jinwoo Shin",
+     "hidden": false
+    }
+   ],
+   "mediaUrls": [
+    "https://cdn-uploads.huggingface.co/production/uploads/688a928c2b88fe48e8b69bed/XgmCnhVPbAYf87cUV4Upl.mp4"
+   ],
+   "publishedAt": "2026-10-07T00:00:00.000Z",
+   "submittedOnDailyAt": "2026-10-08T00:00:00.000Z",
+   "title": "Q-Learning with Scalar Adjoint Matching",
+   "submittedOnDailyBy": {
+    "_id": "688a928c2b88fe48e8b69bed",
+    "avatarUrl": "https://cdn-avatars.huggingface.co/v1/production/uploads/688a928c2b88fe48e8b69bed/uCNYR5b8swJG5mIoz4sP4.png",
+    "isPro": true,
+    "fullname": "Yonghoon Dong",
+    "user": "yonghoon96",
+    "type": "user",
+    "name": "yonghoon96"
+   },
+   "summary": "Flow policies capture rich and diverse action distributions, and fine-tuning them with off-policy RL to improve beyond the demonstrations has drawn growing interest. However, fine-tuning a flow policy against a learned value function is not trivial, because the policy generates its action over many flow steps. Adjoint matching offers a principled way to update the flow model itself by propagating value information from the final action back to each flow step, but it requires a vector--Jacobian product through the policy at every step, a cost that grows with the number of flow steps and the policy size. We observe that the batch-averaged velocity Jacobian of pretrained flow policies concentrates on its diagonal. Motivated by this finding, we derive a closed-form scalar adjoint that scales the value gradient at the final action by the flow time, eliminating the per-step vector--Jacobian products. We further find that controlling the critic's value at policy-generated actions is particula\u2026",
+   "upvotes": 14,
+   "discussionId": "6ac7953de86b96f168611755",
+   "projectPage": "https://yonghdong.github.io/blog/sqam/",
+   "githubRepo": "https://github.com/yonghdong/sqam",
+   "githubRepoAddedBy": "user",
+   "githubStars": 3,
+   "organization": {
+    "_id": "6475760c33192631bad2bb38",
+    "name": "kaist-ai",
+    "fullname": "KAIST AI",
+    "avatar": "https://cdn-avatars.huggingface.co/v1/production/uploads/6469949654873f0043b09c22/aaZFiyXe1qR-Dmy_xq67m.png"
+   }
+  },
+  "publishedAt": "2026-10-06T20:00:00.000Z",
+  "title": "Q-Learning with Scalar Adjoint Matching",
+  "summary": "Flow policies capture rich and diverse action distributions, and fine-tuning them with off-policy RL to improve beyond the demonstrations has drawn growing interest. However, fine-tuning a flow policy against a learned value function is not trivial, because the policy generates its action over many flow steps. Adjoint matching offers a principled way to update the flow model itself by propagating value information from the final action back to each flow step, but it requires a vector--Jacobian product through the policy at every step, a cost that grows with the number of flow steps and the policy size. We observe that the batch-averaged velocity Jacobian of pretrained flow policies concentrates on its diagonal. Motivated by this finding, we derive a closed-form scalar adjoint that scales the value gradient at the final action by the flow time, eliminating the per-step vector--Jacobian products. We further find that controlling the critic's value at policy-generated actions is particula\u2026",
+  "mediaUrls": [
+   "https://cdn-uploads.huggingface.co/production/uploads/688a928c2b88fe48e8b69bed/XgmCnhVPbAYf87cUV4Upl.mp4"
+  ],
+  "thumbnail": "https://cdn-thumbnails.huggingface.co/social-thumbnails/papers/2610.10437.png",
+  "numComments": 1,
+  "submittedBy": {
+   "_id": "688a928c2b88fe48e8b69bed",
+   "avatarUrl": "https://cdn-avatars.huggingface.co/v1/production/uploads/688a928c2b88fe48e8b69bed/uCNYR5b8swJG5mIoz4sP4.png",
+   "fullname": "Yonghoon Dong",
+   "name": "yonghoon96",
+   "type": "user",
+   "isPro": true,
+   "isHf": false,
+   "isHfAdmin": false,
+   "isMod": false,
+   "followerCount": 2,
+   "isUserFollowing": false
+  },
+  "organization": {
+   "_id": "6475760c33192631bad2bb38",
+   "name": "kaist-ai",
+   "fullname": "KAIST AI",
+   "avatar": "https://cdn-avatars.huggingface.co/v1/production/uploads/6469949654873f0043b09c22/aaZFiyXe1qR-Dmy_xq67m.png"
+  },
+  "isAuthorParticipating": true
+ },
+ {
+  "paper": {
+   "id": "2610.07862",
+   "authors": [
+    {
+     "_id": "6ac76dd8e86b96f1686116c2",
+     "user": {
+      "_id": "6641a94569597de256b60e0b",
+      "avatarUrl": "https://cdn-avatars.huggingface.co/v1/production/uploads/6641a94569597de256b60e0b/Nqo6uadL6570BAbIuHGdQ.jpeg",
+      "isPro": false,
+      "fullname": "caobin",
+      "user": "caobin",
+      "type": "user",
+      "name": "caobin"
+     },
+     "name": "Bin Cao",
+     "status": "claimed_verified",
+     "statusLastChangedAt": "2026-10-08T13:53:11.164Z",
+     "hidden": false
+    },
+    {
+     "_id": "6ac76dd8e86b96f1686116c3",
+     "name": "Huichi Zhou",
+     "hidden": false
+    },
+    {
+     "_id": "6ac76dd8e86b96f1686116c4",
+     "name": "Runyu Yang",
+     "hidden": false
+    },
+    {
+     "_id": "6ac76dd8e86b96f1686116c5",
+     "name": "Jingsong Li",
+     "hidden": false
+    },
+    {
+     "_id": "6ac76dd8e86b96f1686116c6",
+     "name": "Shuchen Sun",
+     "hidden": false
+    },
+    {
+     "_id": "6ac76dd8e86b96f1686116c7",
+     "user": {
+      "_id": "65a2555c4d251e9356babd2b",
+      "avatarUrl": "/avatars/abea5303debc6cb5b625205c4a2e4e80.svg",
+      "isPro": false,
+      "fullname": "Yan Song",
+      "user": "YanSong97",
+      "type": "user",
+      "name": "YanSong97"
+     },
+     "name": "Yan Song",
+     "status": "claimed_verified",
+     "statusLastChangedAt": "2026-10-08T13:53:07.520Z",
+     "hidden": false
+    },
+    {
+     "_id": "6ac76dd8e86b96f1686116c8",
+     "name": "Hanyu Gao",
+     "hidden": false
+    },
+    {
+     "_id": "6ac76dd8e86b96f1686116c9",
+     "name": "Zhongwei Yu",
+     "hidden": false
+    },
+    {
+     "_id": "6ac76dd8e86b96f1686116ca",
+     "name": "Tong-Yi Zhang",
+     "hidden": false
+    },
+    {
+     "_id": "6ac76dd8e86b96f1686116cb",
+     "name": "Jun Wang",
+     "hidden": false
+    }
+   ],
+   "mediaUrls": [
+    "https://cdn-uploads.huggingface.co/production/uploads/65a2555c4d251e9356babd2b/rauspbgFT4emrtJDJyB-u.mp4"
+   ],
+   "publishedAt": "2026-10-06T00:00:00.000Z",
+   "submittedOnDailyAt": "2026-10-08T00:00:00.000Z",
+   "title": "A self-learning scientific agent for X-ray diffraction",
+   "submittedOnDailyBy": {
+    "_id": "65a2555c4d251e9356babd2b",
+    "avatarUrl": "/avatars/abea5303debc6cb5b625205c4a2e4e80.svg",
+    "isPro": false,
+    "fullname": "Yan Song",
+    "user": "YanSong97",
+    "type": "user",
+    "name": "YanSong97"
+   },
+   "summary": "A central challenge for scientific agents is to turn analytical experience into reusable expertise grounded in physical evidence. Here we introduce Gan Jiang, a self-learning agent for powder X-ray diffraction built on a diffraction-analysis ecosystem we developed: XMatcher, XQueryer, XDecomposer and WPEM. Together, these engines span phase identification, multiphase decomposition and physics-constrained whole-pattern modelling. Gan Jiang converts analytical experience into executable skills by diagnosing failures, revising skill instructions and code, and validating revisions before reuse, without retraining the language model or changing the underlying physical models. Skills selected using development data and frozen before held-out evaluation achieve higher refinement scores than the original expert-designed skills across FullProf, GSAS-II and PyWPEM. The agent resolves strongly overlapping reflections, quantifies a five-phase ancient Egyptian cosmetic, tracks lattice evolution in \u2026",
+   "upvotes": 9,
+   "discussionId": "6ac76dd8e86b96f1686116cc",
+   "projectPage": "https://ganjiang.asia/",
+   "githubRepo": "https://github.com/DeltaGanjiang/XDecomposer",
+   "githubRepoAddedBy": "user",
+   "githubStars": 0,
+   "organization": {
+    "_id": "6a7949a95036d389aeb01b6c",
+    "name": "Yangtze-ailab",
+    "fullname": "yangtze-ailab",
+    "avatar": "https://cdn-avatars.huggingface.co/v1/production/uploads/6a79450d30eca859f1895e7a/ycrBoZgxQwk2y7rUJwc2K.png"
+   }
+  },
+  "publishedAt": "2026-10-05T20:00:00.000Z",
+  "title": "A self-learning scientific agent for X-ray diffraction",
+  "summary": "A central challenge for scientific agents is to turn analytical experience into reusable expertise grounded in physical evidence. Here we introduce Gan Jiang, a self-learning agent for powder X-ray diffraction built on a diffraction-analysis ecosystem we developed: XMatcher, XQueryer, XDecomposer and WPEM. Together, these engines span phase identification, multiphase decomposition and physics-constrained whole-pattern modelling. Gan Jiang converts analytical experience into executable skills by diagnosing failures, revising skill instructions and code, and validating revisions before reuse, without retraining the language model or changing the underlying physical models. Skills selected using development data and frozen before held-out evaluation achieve higher refinement scores than the original expert-designed skills across FullProf, GSAS-II and PyWPEM. The agent resolves strongly overlapping reflections, quantifies a five-phase ancient Egyptian cosmetic, tracks lattice evolution in \u2026",
+  "mediaUrls": [
+   "https://cdn-uploads.huggingface.co/production/uploads/65a2555c4d251e9356babd2b/rauspbgFT4emrtJDJyB-u.mp4"
+  ],
+  "thumbnail": "https://cdn-thumbnails.huggingface.co/social-thumbnails/papers/2610.07862.png",
+  "numComments": 4,
+  "submittedBy": {
+   "_id": "65a2555c4d251e9356babd2b",
+   "avatarUrl": "/avatars/abea5303debc6cb5b625205c4a2e4e80.svg",
+   "fullname": "Yan Song",
+   "name": "YanSong97",
+   "type": "user",
+   "isPro": false,
+   "isHf": false,
+   "isHfAdmin": false,
+   "isMod": false,
+   "followerCount": 2,
+   "isUserFollowing": false
+  },
+  "organization": {
+   "_id": "6a7949a95036d389aeb01b6c",
+   "name": "Yangtze-ailab",
+   "fullname": "yangtze-ailab",
+   "avatar": "https://cdn-avatars.huggingface.co/v1/production/uploads/6a79450d30eca859f1895e7a/ycrBoZgxQwk2y7rUJwc2K.png"
+  },
+  "isAuthorParticipating": true
+ }
+]

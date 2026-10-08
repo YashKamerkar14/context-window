@@ -1,0 +1,43 @@
+{
+ "meta": {
+  "recorded_at": "2026-10-08T18:48:49+00:00"
+ },
+ "exchanges": [
+  {
+   "url": "https://api.github.com/repos/langchain-ai/langgraph/releases?page=1&per_page=30",
+   "status": 200,
+   "headers": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "body_file": "00.json",
+   "gzip": true
+  },
+  {
+   "url": "https://api.github.com/repos/langchain-ai/langgraph/releases?page=2&per_page=30",
+   "status": 200,
+   "headers": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "body_file": "01.json",
+   "gzip": true
+  },
+  {
+   "url": "https://api.github.com/repos/langchain-ai/langgraph/releases?page=3&per_page=30",
+   "status": 200,
+   "headers": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "body_file": "02.json",
+   "gzip": true
+  },
+  {
+   "url": "https://api.github.com/repos/langchain-ai/langgraph/releases?page=4&per_page=30",
+   "status": 200,
+   "headers": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "body_file": "03.json",
+   "gzip": true
+  }
+ ]
+}
