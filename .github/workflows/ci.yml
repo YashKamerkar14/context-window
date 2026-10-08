@@ -40,6 +40,24 @@ jobs:
       - run: uv run pyright
       - run: uv run pytest
 
+  mcp:
+    name: MCP servers (lint, types, tests)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mcp-servers
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+      - run: uv run ruff format --check .
+      - run: uv run ruff check .
+      - run: uv run pyright
+      # Fixture tests only; `-m live` tests call real APIs and never run in CI.
+      - run: uv run pytest
+
   web:
     name: Web (lint, types, build)
     runs-on: ubuntu-latest

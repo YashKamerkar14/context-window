@@ -128,7 +128,7 @@ flowchart TD
 | Checkpointer | `langgraph-checkpoint-postgres` (`AsyncPostgresSaver`) | Direct (non-pooled) connection, `autocommit=True`, `dict_row` |
 | Model access | LangChain chat model interface (`init_chat_model`) | Provider and model names come from environment variables |
 | Typed outputs | Pydantic v2 with structured output | Every agent returns a validated schema, never free text |
-| Tools | MCP servers built with standalone `fastmcp`, loaded through `langchain-mcp-adapters` | One persistent session per server per run, not one per call |
+| Tools | MCP servers built with standalone `fastmcp` 4, called through FastMCP's own `Client` over stdio | One persistent session per server per run, not one per call. `langchain-mcp-adapters` was dropped (checked 2026-10-08): 0.3.1 fails to import against MCP 2 and 0.3.2 pins `mcp<2`, while FastMCP 4 requires MCP 2. Reporters call tools directly, so no LangChain tool wrapping is needed |
 | API | FastAPI, deployed on Vercel's Python runtime (Fluid compute) | Short requests only. Live events are polled from `run_events`. `POST /runs` and review trigger GitHub `workflow_dispatch` |
 | Worker | GitHub Actions jobs running `cw run` / `cw resume` | `newsroom.yml` (daily cron plus dispatch) and `review-timeout.yml`. Use a private repo: scheduled workflows in public repos are disabled after 60 days without commits |
 | Database | Neon Postgres 18 with pgvector 0.8 | Branch `dev` for local work, `production` for deployed. Docker (`pgvector/pgvector:0.8.7-pg18`) is an optional offline alternative |
@@ -140,7 +140,8 @@ flowchart TD
 | Graph view (web) | React Flow (`@xyflow/react`) | |
 | Email | Jinja2 HTML template plus the Resend Python SDK | Rendered in the Python publish node. React Email was dropped because it needs Node |
 | Hosting (all free tiers) | Vercel Hobby: the web app (Next.js) and the API (FastAPI) as two projects from one repo. GitHub Actions: the newsroom jobs. Neon free plan: the database | Total cost $0 plus model usage (OpenRouter) |
-| Python tooling | uv, Ruff, pytest (+ pytest-asyncio), pyright | Live-network tests are marked `live` and excluded from CI |
+| Python tooling | uv, Ruff, pytest (+ pytest-asyncio), pyright | Live-network tests are marked `live` and excluded from CI. `link-mode = "copy"` in both Python projects: OneDrive folders reject uv's hardlinks and leave installs half-done |
+| Feeds and pages | feedparser (RSS, Atom, arXiv API), trafilatura (main text for fact-checking), lxml | Approved 2026-10-08 |
 | JS tooling | Node 24 LTS, pnpm, ESLint, Prettier | |
 | CI | GitHub Actions | Lint, type-check and tests on every push |
 
@@ -202,13 +203,18 @@ context-window/
 │       │       └── revalidate/route.ts       called by publish
 │       ├── components/
 │       └── lib/
-├── mcp-servers/
-│   ├── arxiv/
-│   ├── hf-papers/
-│   ├── github-releases/
-│   ├── rss/                     also used for PyPI release feeds
-│   ├── hackernews/
-│   └── web-fetch/
+├── mcp-servers/                 one package (`context_window_mcp`), one module per server,
+│   │                            each runnable alone: `python -m context_window_mcp.<name>`
+│   ├── src/context_window_mcp/
+│   │   ├── http.py              shared polite client: UA, rate limits, retries, size cap, cache
+│   │   ├── rss.py               also used for PyPI release feeds
+│   │   ├── github_releases.py
+│   │   ├── arxiv.py
+│   │   ├── hf_papers.py
+│   │   ├── hackernews.py
+│   │   └── web_fetch.py         robots.txt, hidden-text stripping, main-text extraction
+│   ├── scripts/record_fixtures.py   records real responses, sanitised (no article text)
+│   └── tests/                   fixture replay + `-m live` tests against the real APIs
 └── evals/
     ├── datasets/
     └── run_evals.py
@@ -406,11 +412,15 @@ structured data and never raise on an empty result.
 - web-fetch respects `robots.txt`.
 
 **Sessions and caching**
-- `langchain-mcp-adapters` opens a new session per tool call by default. With stdio
-  that means a new subprocess for every call. Instead, `mcp_client.py` opens one
-  persistent session per server per run (`async with client.session(name)`) and loads
-  the tools from it.
-- The per-run cache is the `fetch_cache` table, not server memory.
+- `mcp_client.NewsroomTools` starts each server's stdio process on first use and keeps
+  it for the whole run, so a run pays start-up once per server, not once per call.
+- Each server inherits a minimal environment plus only what it needs; `GITHUB_TOKEN`
+  reaches the GitHub server alone.
+- Feeds and API responses are cached in the server process, which lives for one run.
+  Fetched evidence pages are cached in the `fetch_cache` table, so a resumed run does not
+  fetch them again.
+- Every tool returns a structured result with an `error` (or `status`) field instead of
+  raising; only invalid arguments raise.
 
 **Tests** use FastMCP's in-memory transport against recorded fixtures.
 
@@ -525,7 +535,7 @@ them and prints a table.
 - [x] Get an OpenRouter API key with a credit limit. Note the per-token prices of the chosen models in Phase 4.
 - [ ] Get an embeddings key (Gemini free tier, or a local model).
 - [ ] Create a LangSmith account and API key.
-- [ ] Create a GitHub personal access token with public read access (for release data).
+- [x] Create a GitHub personal access token with public read access (for release data).
 - [x] Create a Neon project (Postgres 18, AWS US East 1) with a `dev` branch.
 - [ ] Create a Vercel account, because a skeleton is deployed in Phase 1.
 - [ ] Later: a Resend account. Without a domain, send from Resend's test address to your own email.
@@ -574,7 +584,8 @@ through Hacker News and the releases beat until a fetcher for their news pages i
 
 1. Build `rss`, then `github-releases`, `arxiv`, `hf-papers`, `hackernews` and `web-fetch`.
 2. Record real responses as fixtures and test each server against them with the in-memory transport.
-3. Write `mcp_client.py`, with persistent per-run sessions and `fetch_cache`.
+3. Write `mcp_client.py`, with persistent per-run sessions and `fetch_cache`, and
+   `cw mcp list` / `cw mcp call <server> <tool> '<json>'`.
 
 **Done when:**
 - Each server can be called on its own from the command line and returns real data (a `live` test).
