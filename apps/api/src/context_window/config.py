@@ -31,6 +31,10 @@ class Settings(BaseSettings):
     database_url_direct: SecretStr | None = None
     embedding_dim: int = Field(default=1536, ge=1, le=16000)
 
+    # Sources. The token goes only to the GitHub MCP server.
+    github_token: SecretStr | None = None
+    max_fetch_bytes: int = Field(default=2_000_000, ge=10_000)
+
     # Starter sources, watchlist and interests.
     settings_file: Path = REPO_ROOT / "config" / "settings.toml"
 

@@ -8,6 +8,7 @@ authors = [
 requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.20.0",
+    "context-window-mcp",
     "fastapi[standard]>=0.142.4",
     "langgraph-checkpoint-postgres>=3.1.2",
     "pgvector>=0.5.0",
@@ -61,3 +62,11 @@ asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 markers = ["live: needs real network access; excluded from CI"]
 addopts = "-m 'not live'"
+
+[tool.uv.sources]
+context-window-mcp = { path = "../../mcp-servers", editable = true }
+
+[tool.uv]
+# Copy packages into .venv instead of hardlinking from uv's cache: OneDrive folders
+# reject hardlinks ("incompatible hardlinks", os error 396), which left installs half-done.
+link-mode = "copy"

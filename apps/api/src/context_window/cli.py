@@ -1,7 +1,9 @@
 """The `cw` command."""
 
 import argparse
+import json
 import logging
+import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -39,10 +41,25 @@ def _build_parser() -> argparse.ArgumentParser:
         help="reset interest weights to the file's values, discarding learned feedback",
     )
     load.add_argument("--dry-run", action="store_true", help="validate the file only")
+
+    mcp = sub.add_parser("mcp", help="call the MCP source servers directly")
+    mcp_sub = mcp.add_subparsers(dest="mcp_command", required=True)
+    mcp_sub.add_parser("list", help="list every server and its tools")
+    call = mcp_sub.add_parser("call", help="call one tool and print its JSON result")
+    call.add_argument(
+        "server", help="rss, github_releases, arxiv, hf_papers, hackernews, web_fetch"
+    )
+    call.add_argument("tool", help="tool name, e.g. fetch_feed")
+    call.add_argument("arguments", nargs="?", default="{}", help="JSON object of arguments")
     return parser
 
 
 def main(argv: list[str] | None = None) -> None:
+    # Windows consoles default to a legacy code page that cannot print many headlines.
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            reconfigure(encoding="utf-8", errors="replace")
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     logging.getLogger("alembic.runtime.plugins").setLevel(logging.WARNING)
     args = _build_parser().parse_args(argv)
@@ -57,6 +74,33 @@ def main(argv: list[str] | None = None) -> None:
         _db(args.db_command)
     elif args.command == "settings":
         _load_settings(args.file, reset_weights=args.reset_weights, dry_run=args.dry_run)
+    elif args.command == "mcp":
+        aio.run(
+            _mcp(
+                args.mcp_command,
+                getattr(args, "server", ""),
+                getattr(args, "tool", ""),
+                getattr(args, "arguments", "{}"),
+            )
+        )
+
+
+async def _mcp(command: str, server: str, tool: str, arguments: str) -> None:
+    from context_window.mcp_client import NewsroomTools, known_servers
+
+    async with NewsroomTools() as tools:
+        if command == "list":
+            for name in known_servers():
+                print(f"{name}: {', '.join(await tools.list_tools(name))}")
+            return
+        try:
+            parsed = json.loads(arguments)
+        except json.JSONDecodeError as exc:
+            raise SystemExit(f"arguments must be a JSON object: {exc}") from exc
+        if not isinstance(parsed, dict):
+            raise SystemExit("arguments must be a JSON object")
+        result = await tools.call(server, tool, parsed)  # pyright: ignore[reportUnknownArgumentType]
+        print(json.dumps(result, indent=2, ensure_ascii=False))
 
 
 def _serve_api(*, reload: bool) -> None:
