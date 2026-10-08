@@ -12,6 +12,6 @@ def test_unknown_command_fails() -> None:
         main(["nope"])
 
 
-def test_run_rejects_beats_without_a_reporter() -> None:
+def test_run_rejects_unknown_beats() -> None:
     with pytest.raises(SystemExit):
-        main(["run", "--beat", "research"])
+        main(["run", "--beat", "sports"])

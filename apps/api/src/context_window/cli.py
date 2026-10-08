@@ -28,16 +28,19 @@ def _build_parser() -> argparse.ArgumentParser:
     run.add_argument(
         "--beat",
         action="append",
-        choices=["releases"],
-        help="beat to report (repeatable; default: releases). Other beats arrive in Phase 5",
+        choices=["releases", "research", "industry", "community"],
+        help="beat to report (repeatable; default: every enabled beat)",
     )
     run.add_argument(
         "--consume",
         action="store_true",
         help=(
-            "dev only: mark the candidates' items as consumed, as publishing will, so the "
-            "next run skips them"
+            "dev only: mark the draft briefing's items as consumed, as publishing will, so "
+            "the next run skips them"
         ),
+    )
+    run.add_argument(
+        "--claims", action="store_true", help="also print each story's claims and claim map"
     )
 
     worker = sub.add_parser("worker", help="run the background worker")
@@ -84,7 +87,7 @@ def main(argv: list[str] | None = None) -> None:
     if args.command == "api":
         _serve_api(reload=args.reload)
     elif args.command == "run":
-        _run(args.beat or ["releases"], consume=args.consume)
+        _run(args.beat or [], consume=args.consume, claims=args.claims)
     elif args.command == "worker":
         from context_window.worker import run_worker
 
@@ -122,7 +125,7 @@ async def _mcp(command: str, server: str, tool: str, arguments: str) -> None:
         print(json.dumps(result, indent=2, ensure_ascii=False))
 
 
-def _run(beats: list[str], *, consume: bool) -> None:
+def _run(beats: list[str], *, consume: bool, claims: bool) -> None:
     from context_window.db.queries import RunAlreadyActiveError
     from context_window.runner import run_newsroom
     from context_window.schemas.enums import Beat
@@ -133,24 +136,36 @@ def _run(beats: list[str], *, consume: bool) -> None:
         result = aio.run(run_newsroom(settings, selected, consume=consume))
     except RunAlreadyActiveError as exc:
         raise SystemExit(f"{exc}. Wait for it to finish, or mark it failed.") from exc
-    _print_run(result)
+    _print_run(result, claims=claims)
 
 
-def _print_run(result: "RunResult") -> None:
+def _print_run(result: "RunResult", *, claims: bool = False) -> None:
     print()
     print(f"Run {result.run_id} ({result.run_date})")
-    print(f"{len(result.candidates)} story candidates")
+    print(
+        f"{len(result.candidates)} candidates -> {len(result.stories)} stories in the "
+        f"fact-check pool -> {len(result.draft.stories) if result.draft else 0} in the draft"
+    )
     print()
-    for number, story in enumerate(result.candidates, start=1):
+    draft_ids = {s.id for s in result.draft.stories} if result.draft else set[str]()
+    for number, story in enumerate(result.stories, start=1):
         breaking = "  [BREAKING]" if story.is_breaking_change else ""
-        print(f"{number}. {story.headline}{breaking}")
-        print(f"   {story.summary}")
-        print(f"   Why it matters: {story.why_it_matters}")
-        for entry in story.sentence_claim_map:
-            print(f'   - "{entry.sentence}" <- {", ".join(entry.claim_ids)}')
-        for claim in story.claims:
-            print(f"     {claim.id}: {claim.text}")
-        print(f"   Sources: {', '.join(story.source_urls)}")
+        merged = f", merged from {story.merged_from}" if story.merged_from > 1 else ""
+        in_draft = "*" if story.id in draft_ids else " "
+        print(f"{in_draft}{number:>2}. [{story.beat}] {story.headline}{breaking}")
+        print(f"     score {story.score:.3f}{merged}")
+        print(f"     {story.summary}")
+        print(f"     Why it matters: {story.why_it_matters}")
+        if claims:
+            for entry in story.sentence_claim_map:
+                print(f'     - "{entry.sentence}" <- {", ".join(entry.claim_ids)}')
+            for claim in story.claims:
+                print(f"       {claim.id}: {claim.text}")
+        print(f"     Sources: {', '.join(story.source_urls)}")
+        print()
+    if result.draft is not None:
+        light = " (light day)" if result.draft.light_day else ""
+        print(f"* in the draft briefing{light}. Intro: {result.draft.intro}")
         print()
 
     stats, budget = result.stats, result.budget

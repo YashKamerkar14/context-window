@@ -1,8 +1,9 @@
 """Running the newsroom graph for one run: the `runs` row, the checkpointer, the MCP
 sessions, the budget and the heartbeat around one `ainvoke`.
 
-Phase 4 runs reporters only. Nothing is published yet, so a finished run ends as
+Nothing is published yet (review and publishing come later), so a finished run ends as
 `rejected` (the plan's "ended, published nothing"), which frees its date for the next run.
+Its draft briefing stays in `briefings`.
 """
 
 # LangGraph spans several distributions in one namespace, so pyright misses its py.typed
@@ -13,7 +14,7 @@ import asyncio
 import datetime as dt
 import logging
 import uuid
-from collections.abc import AsyncGenerator, Iterable, Sequence
+from collections.abc import AsyncGenerator, Sequence
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from typing import Any
@@ -28,25 +29,21 @@ from context_window.config import Settings
 from context_window.db.models import Item, Run
 from context_window.db.queries import create_run, mark_items_consumed, touch_heartbeat
 from context_window.db.session import make_engine, make_sessionmaker
+from context_window.embeddings import make_embedder
+from context_window.graph.briefing import make_intro_writer
 from context_window.graph.checkpoint import postgres_checkpointer
-from context_window.graph.context import NewsroomContext
+from context_window.graph.context import Agents, NewsroomContext
+from context_window.graph.editor import make_coverage_planner
 from context_window.graph.newsroom import build_newsroom_graph
-from context_window.graph.reporter.releases_writer import make_release_writer
+from context_window.graph.rank import make_same_event_judge
+from context_window.graph.reporter.writer import make_story_writer
 from context_window.mcp_client import NewsroomTools
 from context_window.models import chat_model
 from context_window.schemas.enums import Beat, RunStatus, RunTrigger
-from context_window.schemas.newsroom import BeatAssignment, RunError, RunStats, StoryCandidate
+from context_window.schemas.newsroom import Briefing, RunError, RunStats, Story, StoryCandidate
 from context_window.tracing import configure_tracing, flush_traces, trace_url
 
 log = logging.getLogger(__name__)
-
-# What each reporter looks for until the editor (Phase 5) writes assignments.
-DEFAULT_FOCUS: dict[Beat, str] = {
-    Beat.RELEASES: (
-        "Changes in the watchlist tools that affect engineers who use them: new features, "
-        "breaking changes, deprecations and security fixes."
-    ),
-}
 
 
 @dataclass(frozen=True)
@@ -54,6 +51,8 @@ class RunResult:
     run_id: uuid.UUID
     run_date: dt.date
     candidates: list[StoryCandidate]
+    stories: list[Story]  # the ranked pool
+    draft: Briefing | None
     stats: RunStats
     budget: Budget
     consumed_items: int
@@ -64,17 +63,6 @@ def run_date_for(settings: Settings, now: dt.datetime | None = None) -> dt.date:
     """The briefing date: today in BRIEFING_TZ."""
     moment = now or dt.datetime.now(dt.UTC)
     return moment.astimezone(ZoneInfo(settings.briefing_tz)).date()
-
-
-def assignments_for(settings: Settings, beats: Iterable[Beat]) -> list[BeatAssignment]:
-    return [
-        BeatAssignment(
-            beat=beat,
-            focus=DEFAULT_FOCUS.get(beat, f"Today's most important {beat} news."),
-            max_items=settings.max_items_per_beat,
-        )
-        for beat in beats
-    ]
 
 
 @asynccontextmanager
@@ -169,15 +157,21 @@ async def run_newsroom(
         trace = await trace_url(settings, run.id) if tracing else None
 
         candidates: list[StoryCandidate] = state.get("candidates", [])
+        stories: list[Story] = state.get("stories", [])
+        draft: Briefing | None = state.get("draft")
         stats: RunStats = state.get("stats") or RunStats()
         stats = stats.merge(budget.stats())
         consumed = 0
         if consume:
+            # What publishing will consume: the briefing's stories.
+            published = draft.stories if draft is not None else []
             async with sessions() as session:
-                consumed = await consume_candidates(session, candidates, at=dt.datetime.now(dt.UTC))
+                consumed = await consume_candidates(session, published, at=dt.datetime.now(dt.UTC))
                 await session.commit()
         await _finish(sessions, run.id, RunStatus.REJECTED, stats, trace)
-        return RunResult(run.id, run_date, candidates, stats, budget, consumed, trace)
+        return RunResult(
+            run.id, run_date, candidates, stories, draft, stats, budget, consumed, trace
+        )
     finally:
         await engine.dispose()
 
@@ -189,7 +183,13 @@ async def _invoke(
     beats: Sequence[Beat],
     budget: Budget,
 ) -> dict[str, Any]:
-    writer = make_release_writer(chat_model(settings, "fast"))
+    fast, strong = chat_model(settings, "fast"), chat_model(settings, "strong")
+    agents = Agents(
+        plan_coverage=make_coverage_planner(strong),
+        write_stories=make_story_writer(fast),
+        same_event=make_same_event_judge(fast),
+        write_intro=make_intro_writer(strong),
+    )
     async with (
         NewsroomTools(settings=settings) as tools,
         postgres_checkpointer(settings.require_direct_url()) as saver,
@@ -197,7 +197,11 @@ async def _invoke(
     ):
         graph = build_newsroom_graph().compile(checkpointer=saver)
         context = NewsroomContext(
-            settings=settings, tools=tools, db=sessions, write_releases=writer
+            settings=settings,
+            tools=tools,
+            db=sessions,
+            embed=make_embedder(settings),
+            agents=agents,
         )
         config: RunnableConfig = {
             "configurable": {"thread_id": str(run.id)},
@@ -212,7 +216,7 @@ async def _invoke(
                 {
                     "run_id": str(run.id),
                     "run_date": run.run_date,
-                    "assignments": assignments_for(settings, beats),
+                    "beats": list(beats),
                 },
                 config,
                 context=context,

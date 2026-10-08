@@ -10,6 +10,7 @@ import datetime as dt
 import operator
 from typing import Annotated, TypedDict
 
+from context_window.schemas.enums import Beat
 from context_window.schemas.newsroom import (
     BeatAssignment,
     Briefing,
@@ -29,9 +30,15 @@ def merge_stats(left: RunStats | None, right: RunStats | None) -> RunStats:
     return left.merge(right)
 
 
-class NewsroomState(TypedDict, total=False):
+class NewsroomInput(TypedDict):
     run_id: str
     run_date: dt.date
+
+
+class NewsroomUpdate(TypedDict, total=False):
+    """What a node returns: any subset of the fields."""
+
+    beats: list[Beat]  # input: the beats to cover (empty: every enabled beat)
     assignments: list[BeatAssignment]
     candidates: Annotated[list[StoryCandidate], operator.add]
     stories: list[Story]
@@ -40,3 +47,7 @@ class NewsroomState(TypedDict, total=False):
     draft: Briefing | None
     review: ReviewDecision | None
     stats: Annotated[RunStats, merge_stats]
+
+
+class NewsroomState(NewsroomInput, NewsroomUpdate):
+    pass

@@ -4,20 +4,21 @@
 # marker, and its annotations contain unknown type arguments (e.g. CachePolicy[Unknown]).
 # pyright: reportUnknownMemberType=false, reportMissingTypeStubs=false
 
+import datetime as dt
 import os
 
 from langchain_core.runnables import RunnableConfig
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph import START, StateGraph
 
-from context_window.graph.state import NewsroomState
+from context_window.graph.state import NewsroomState, NewsroomUpdate
 from context_window.schemas.enums import Beat
 from context_window.schemas.newsroom import RunStats, StoryCandidate
 from tests.test_newsroom_schemas import candidate
 
 
 def _branch(name: str, cost: float):
-    def node(state: NewsroomState) -> NewsroomState:
+    def node(state: NewsroomState) -> NewsroomUpdate:
         return {
             "candidates": [StoryCandidate.model_validate(candidate(headline=name))],
             "stats": RunStats(items_fetched_by_beat={Beat.RELEASES: 1}, cost_usd=cost),
@@ -36,7 +37,7 @@ async def test_parallel_branches_append_and_merge_and_survive_a_checkpoint() -> 
     graph = builder.compile(checkpointer=InMemorySaver())
 
     config: RunnableConfig = {"configurable": {"thread_id": "t1"}}
-    await graph.ainvoke({"run_id": "r1"}, config)
+    await graph.ainvoke({"run_id": "r1", "run_date": dt.date(2026, 10, 9)}, config)
 
     # Read back from the checkpoint, which goes through the strict deserializer.
     state = (await graph.aget_state(config)).values

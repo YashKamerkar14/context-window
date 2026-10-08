@@ -6,38 +6,31 @@ responses, a stub stands in for the model, and the database is the rolled-back t
 import datetime as dt
 import email.utils
 import json
-from collections.abc import AsyncGenerator, Sequence
-from contextlib import asynccontextmanager
+from collections.abc import Sequence
 from typing import Any
 
 import httpx
 import pytest
 from context_window_mcp import github_releases, rss
-from context_window_mcp.http import HttpConfig, PoliteClient
-from fastmcp.client.transports import FastMCPTransport
-from langchain_core.runnables import RunnableConfig
-from langgraph.checkpoint.memory import InMemorySaver
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from context_window.config import Settings
 from context_window.db.models import FetchCache, Item
 from context_window.db.queries import create_run, mark_items_consumed
-from context_window.graph.context import NewsroomContext
-from context_window.graph.newsroom import build_newsroom_graph
 from context_window.graph.reporter.drafts import (
     DraftClaim,
     DraftSentence,
     DraftStory,
-    ReleaseDrafts,
-    ReleaseNotes,
-    SkippedRelease,
+    LeadText,
+    StoryDrafts,
 )
+from context_window.graph.reporter.graph import build_reporter_graph
+from context_window.graph.reporter.leads import Fetched
 from context_window.graph.reporter.releases import FetchedRelease, group_releases, parse_tag
-from context_window.mcp_client import NewsroomTools
-from context_window.schemas.enums import Beat, RunTrigger
+from context_window.schemas.enums import Beat, RunStatus, RunTrigger
 from context_window.schemas.newsroom import BeatAssignment
 from context_window.settings_file import RepoSpec, SettingsFile, SourceSpec, sync_settings
+from tests.fakes import StubWriter, newsroom_context, transport
 
 NOW = dt.datetime.now(dt.UTC).replace(microsecond=0)
 GH = "https://github.com/langchain-ai/langgraph/releases/tag"
@@ -58,15 +51,19 @@ def test_parse_tag(tag: str, expected: tuple[str | None, str]) -> None:
 
 
 def _fetched(key: str, package: str | None, version: str, *, github: bool) -> FetchedRelease:
-    return FetchedRelease(
+    item = Fetched(
         source_id=1,
-        repo="langchain-ai/langchain",
-        package=package,
-        version=version,
+        authority=5,
         url=f"https://example.com/{key}",
         key=key,
         title=key,
         published_at=NOW,
+    )
+    return FetchedRelease(
+        item=item,
+        repo="langchain-ai/langchain",
+        package=package,
+        version=version,
         notes="notes" if github else "",
         from_github=github,
     )
@@ -80,7 +77,7 @@ def test_group_joins_github_and_pypi_copies_of_one_package_version() -> None:
             _fetched("gh:langchain==1.6.8", "langchain", "1.6.8", github=True),
         ]
     )
-    assert [[r.key for r in g] for g in groups] == [
+    assert [[r.item.key for r in g] for g in groups] == [
         ["gh:langchain-core==1.6.8", "pypi:langchain-core@1.6.8"],
         ["gh:langchain==1.6.8"],
     ]
@@ -89,7 +86,7 @@ def test_group_joins_github_and_pypi_copies_of_one_package_version() -> None:
 # --- End to end ------------------------------------------------------------------------
 
 
-def _github_handler(request: httpx.Request) -> httpx.Response:
+def github_handler(request: httpx.Request) -> httpx.Response:
     assert request.url.path == "/repos/langchain-ai/langgraph/releases"
     releases = [
         {
@@ -111,7 +108,7 @@ def _github_handler(request: httpx.Request) -> httpx.Response:
     return httpx.Response(200, content=json.dumps(releases))
 
 
-def _pypi_handler(request: httpx.Request) -> httpx.Response:
+def pypi_handler(request: httpx.Request) -> httpx.Response:
     assert request.url.path == "/rss/project/langgraph/releases.xml"
     items = "".join(
         f"<item><title>{version}</title>"
@@ -123,54 +120,11 @@ def _pypi_handler(request: httpx.Request) -> httpx.Response:
             ("1.2.12", dt.timedelta(hours=50)),  # on PyPI only, no notes
         ]
     )
-    return httpx.Response(
-        200, text=f'<?xml version="1.0"?><rss version="2.0"><channel>{items}</channel></rss>'
-    )
+    feed = f'<?xml version="1.0"?><rss version="2.0"><channel>{items}</channel></rss>'
+    return httpx.Response(200, text=feed)
 
 
-def _transport(create_server: Any, handler: Any) -> FastMCPTransport:
-    def factory() -> PoliteClient:
-        return PoliteClient(HttpConfig(), transport=httpx.MockTransport(handler))
-
-    return FastMCPTransport(create_server(factory))
-
-
-class StubWriter:
-    """Writes a valid story for 1.2.14, an invalid one for anything else with features,
-    and skips the rest."""
-
-    def __init__(self) -> None:
-        self.batches: list[list[ReleaseNotes]] = []
-
-    async def __call__(
-        self, releases: Sequence[ReleaseNotes], assignment: BeatAssignment
-    ) -> ReleaseDrafts:
-        self.batches.append(list(releases))
-        stories: list[DraftStory] = []
-        skipped: list[SkippedRelease] = []
-        for release in releases:
-            if release.version == "1.2.14":
-                stories.append(
-                    DraftStory(
-                        release_id=release.id,
-                        headline="LangGraph 1.2.14 adds durable retries",
-                        summary=[
-                            DraftSentence(
-                                text="LangGraph 1.2.14  adds durable retries for tasks.",
-                                claim_ids=["c1"],
-                            )
-                        ],
-                        why_it_matters="Long-running agents can retry failed tasks safely.",
-                        claims=[DraftClaim(id="c1", text="1.2.14 adds durable retries.")],
-                        is_breaking_change=False,
-                    )
-                )
-            else:
-                skipped.append(SkippedRelease(release_id=release.id, reason="dependency bumps"))
-        return ReleaseDrafts(stories=stories, skipped=skipped)
-
-
-async def _load_settings(session: AsyncSession) -> None:
+async def load_release_settings(session: AsyncSession) -> None:
     await sync_settings(
         session,
         SettingsFile(
@@ -202,48 +156,39 @@ async def _load_settings(session: AsyncSession) -> None:
     )
 
 
-async def _run(session: AsyncSession, writer: StubWriter) -> dict[str, Any]:
+async def _report(session: AsyncSession, writer: Any) -> dict[str, Any]:
     run = await create_run(session, run_date=NOW.date(), trigger=RunTrigger.MANUAL)
-
-    @asynccontextmanager
-    async def db() -> AsyncGenerator[AsyncSession]:
-        yield session
-
-    settings = Settings(_env_file=None)  # pyright: ignore[reportCallIssue]
     transports = {
-        "github_releases": _transport(github_releases.create_server, _github_handler),
-        "rss": _transport(rss.create_server, _pypi_handler),
+        "github_releases": transport(github_releases.create_server, github_handler),
+        "rss": transport(rss.create_server, pypi_handler),
     }
-    async with NewsroomTools(settings=settings, transports=transports) as tools:
-        context = NewsroomContext(
-            settings=settings, tools=tools, db=db, write_releases=writer, now=lambda: NOW
-        )
-        graph = build_newsroom_graph().compile(checkpointer=InMemorySaver())
-        config: RunnableConfig = {"configurable": {"thread_id": str(run.id)}}
+    async with newsroom_context(session, transports, writer=writer, now=lambda: NOW) as ctx:
         assignment = BeatAssignment(beat=Beat.RELEASES, focus="watchlist releases", max_items=40)
-        state = await graph.ainvoke(
-            {"run_id": str(run.id), "run_date": run.run_date, "assignments": [assignment]},
-            config,
-            context=context,
+        output = await build_reporter_graph().ainvoke(
+            {"run_id": str(run.id), "assignment": assignment}, context=ctx
         )
-    # End this run so the next one may start for the same date.
-    run.status = "rejected"  # pyright: ignore[reportAttributeAccessIssue]
+    run.status = RunStatus.REJECTED  # end this run so the next may start for the same date
     await session.flush()
-    return {"run": run, **state}
+    return {"run": run, **output}
+
+
+def _not_1_2_14(lead: LeadText) -> bool:
+    return lead.labels.get("version") != "1.2.14"
 
 
 async def test_reports_new_releases_and_skips_consumed_ones(session: AsyncSession) -> None:
-    await _load_settings(session)
-    writer = StubWriter()
-    first = await _run(session, writer)
+    await load_release_settings(session)
+    writer = StubWriter(skip=_not_1_2_14)
+    first = await _report(session, writer)
 
     # Only releases with notes reach the model; 1.2.12 exists only on PyPI.
-    assert [[r.version for r in batch] for batch in writer.batches] == [["1.2.14", "1.2.13"]]
-    assert "Durable retries" in writer.batches[0][0].notes
+    [(beat, leads)] = writer.calls
+    assert beat is Beat.RELEASES
+    assert [lead.labels["version"] for lead in leads] == ["1.2.14", "1.2.13"]
+    assert "Durable retries" in leads[0].text
 
     [story] = first["candidates"]
-    assert story.headline == "LangGraph 1.2.14 adds durable retries"
-    assert story.summary == "LangGraph 1.2.14 adds durable retries for tasks."
+    assert story.headline == "langgraph 1.2.14"
     assert story.claims[0].source_url == f"{GH}/1.2.14"
     assert story.source_urls == [f"{GH}/1.2.14", "https://pypi.org/project/langgraph/1.2.14/"]
     assert story.canonical_keys == ["gh:langchain-ai/langgraph@1.2.14", "pypi:langgraph@1.2.14"]
@@ -251,7 +196,7 @@ async def test_reports_new_releases_and_skips_consumed_ones(session: AsyncSessio
     stats = first["stats"]
     assert stats.items_fetched_by_beat == {Beat.RELEASES: 4}  # 2 GitHub + 2 final PyPI
     assert stats.candidates == 1 and stats.errors == []
-    assert set(stats.timings_ms) == {"reporter.fetch", "reporter.write"}
+    assert set(stats.timings_ms) == {"reporter.releases.fetch", "reporter.releases.write"}
 
     items = (await session.scalars(select(Item).order_by(Item.canonical_key))).all()
     assert [i.canonical_key for i in items] == [
@@ -267,43 +212,43 @@ async def test_reports_new_releases_and_skips_consumed_ones(session: AsyncSessio
 
     # Publishing (later phases) consumes the story's items; a second run skips them.
     await mark_items_consumed(
-        session,
-        [i.id for i in items if i.canonical_key in story.canonical_keys],
-        at=NOW,
+        session, [i.id for i in items if i.canonical_key in story.canonical_keys], at=NOW
     )
-    second_writer = StubWriter()
-    second = await _run(session, second_writer)
-    assert [[r.version for r in batch] for batch in second_writer.batches] == [["1.2.13"]]
+    second_writer = StubWriter(skip=_not_1_2_14)
+    second = await _report(session, second_writer)
+    assert [[lead.labels["version"] for lead in leads] for _, leads in second_writer.calls] == [
+        ["1.2.13"]
+    ]
     assert second["candidates"] == []
 
 
 async def test_invalid_drafts_and_writer_failures_become_errors(session: AsyncSession) -> None:
-    await _load_settings(session)
+    await load_release_settings(session)
 
-    async def broken(releases: Sequence[ReleaseNotes], assignment: BeatAssignment) -> ReleaseDrafts:
+    async def broken(
+        beat: Beat, leads: Sequence[LeadText], assignment: BeatAssignment
+    ) -> StoryDrafts:
         story = DraftStory(
-            release_id=releases[0].id,
+            item_id=leads[0].id,
             headline="x",
             summary=[DraftSentence(text="Says c1.", claim_ids=["c1"])],
             why_it_matters="y",
             claims=[DraftClaim(id="c1", text="a"), DraftClaim(id="c2", text="uncited")],
             is_breaking_change=False,
         )
-        return ReleaseDrafts(
-            stories=[story, story.model_copy(update={"release_id": 99})], skipped=[]
-        )
+        return StoryDrafts(stories=[story, story.model_copy(update={"item_id": 99})], skipped=[])
 
-    state = await _run(session, broken)  # pyright: ignore[reportArgumentType]
-    assert state["candidates"] == []
-    messages = [e.message for e in state["stats"].errors]
+    output = await _report(session, broken)
+    assert output["candidates"] == []
+    messages = [e.message for e in output["stats"].errors]
     assert any("not cited" in m for m in messages)
-    assert any("unknown or repeated release 99" in m for m in messages)
+    assert any("unknown or repeated item 99" in m for m in messages)
 
     async def failing(
-        releases: Sequence[ReleaseNotes], assignment: BeatAssignment
-    ) -> ReleaseDrafts:
+        beat: Beat, leads: Sequence[LeadText], assignment: BeatAssignment
+    ) -> StoryDrafts:
         raise TimeoutError("model timed out")
 
-    state = await _run(session, failing)  # pyright: ignore[reportArgumentType]
-    assert state["candidates"] == []
-    assert [e.message for e in state["stats"].errors] == ["TimeoutError: model timed out"]
+    output = await _report(session, failing)
+    assert output["candidates"] == []
+    assert [e.message for e in output["stats"].errors] == ["TimeoutError: model timed out"]

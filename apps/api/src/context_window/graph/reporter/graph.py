@@ -1,11 +1,9 @@
 """The reporter subgraph: `fetch`, then `write`, for one beat assignment.
 
-Its input is one assignment and its output is candidates plus stats; everything in
-between (the leads) is private to the subgraph, and the release notes themselves stay in
-the run's fetch cache. A reporter never crashes the run: failures become `stats.errors`
-and the reporter returns whatever it has.
-
-Only the releases beat exists so far (Phase 4); the other beats come in Phase 5.
+Its input is one assignment and its output is candidates plus stats; the leads in
+between are private to the subgraph, and the text the writer works from stays in the
+run's fetch cache. A reporter never crashes the run: failures become `stats.errors` and
+the reporter returns whatever it has.
 """
 
 # LangGraph spans several distributions in one namespace, so pyright misses its py.typed
@@ -13,11 +11,12 @@ Only the releases beat exists so far (Phase 4); the other beats come in Phase 5.
 # pyright: reportUnknownMemberType=false, reportMissingTypeStubs=false
 
 import asyncio
+import datetime as dt
 import logging
 import operator
 import time
 import uuid
-from collections.abc import Sequence
+from collections.abc import Awaitable, Callable, Sequence
 from typing import Annotated, TypedDict
 
 from langgraph.graph import END, START, StateGraph
@@ -28,24 +27,36 @@ from pydantic import ValidationError
 from context_window.budget import BudgetExceeded
 from context_window.fetching import load_feed_texts, save_feed_texts
 from context_window.graph.context import NewsroomContext
-from context_window.graph.reporter.drafts import ReleaseNotes
-from context_window.graph.reporter.releases import (
-    ReleaseLead,
-    fetch_releases,
-    group_releases,
-    load_sources,
-    reportable_leads,
-    save_releases,
-    to_candidate,
-)
+from context_window.graph.reporter.community import community_desk
+from context_window.graph.reporter.drafts import LeadText
+from context_window.graph.reporter.industry import industry_desk
+from context_window.graph.reporter.leads import DeskResult, Lead, to_candidate
+from context_window.graph.reporter.releases import releases_desk
+from context_window.graph.reporter.research import research_desk
 from context_window.graph.state import merge_stats
 from context_window.schemas.enums import Beat
 from context_window.schemas.newsroom import BeatAssignment, RunError, RunStats, StoryCandidate
 
 log = logging.getLogger(__name__)
 
-BATCH_SIZE = 10  # releases per model call (PLAN.md 6.3)
+BATCH_SIZE = 10  # leads per model call (PLAN.md 6.3)
 PARALLEL_BATCHES = 3
+
+Desk = Callable[[NewsroomContext, BeatAssignment, uuid.UUID, dt.datetime], Awaitable[DeskResult]]
+
+
+async def _releases(
+    ctx: NewsroomContext, assignment: BeatAssignment, run_id: uuid.UUID, now: dt.datetime
+) -> DeskResult:
+    return await releases_desk(ctx, assignment, now)
+
+
+DESKS: dict[Beat, Desk] = {
+    Beat.RELEASES: _releases,
+    Beat.RESEARCH: research_desk,
+    Beat.INDUSTRY: industry_desk,
+    Beat.COMMUNITY: community_desk,
+}
 
 
 class ReporterInput(TypedDict):
@@ -61,7 +72,7 @@ class ReporterOutput(TypedDict, total=False):
 class ReporterUpdate(TypedDict, total=False):
     """What a node returns: any subset of the private and output fields."""
 
-    leads: list[ReleaseLead]
+    leads: list[Lead]
     candidates: Annotated[list[StoryCandidate], operator.add]
     stats: Annotated[RunStats, merge_stats]
 
@@ -78,39 +89,25 @@ async def fetch(state: ReporterState, runtime: Runtime[NewsroomContext]) -> Repo
     started = time.perf_counter()
     ctx = runtime.context
     assignment = state["assignment"]
-    if assignment.beat is not Beat.RELEASES:
-        error = RunError(node="reporter.fetch", source=assignment.beat, message="no reporter yet")
+    beat = assignment.beat
+    run_id = uuid.UUID(state["run_id"])
+    try:
+        result = await DESKS[beat](ctx, assignment, run_id, ctx.now())
+    except Exception as exc:  # one beat's failure must not cost the others
+        log.exception("%s desk failed", beat)
+        error = RunError(node="reporter.fetch", source=beat, message=f"{type(exc).__name__}: {exc}")
         return {"leads": [], "stats": RunStats(errors=[error])}
 
-    run_id = uuid.UUID(state["run_id"])
-    now = ctx.now()
     async with ctx.db() as session:
-        sources, repos = await load_sources(session)
-    releases, errors = await fetch_releases(ctx.tools, sources, repos, now=now)
-    async with ctx.db() as session:
-        saved = await save_releases(session, releases)
-        leads = await reportable_leads(
-            session, group_releases(releases), saved, now=now, max_items=assignment.max_items
-        )
-        notes = {r.url: r.notes for r in releases if r.from_github and r.notes.strip()}
-        await save_feed_texts(
-            session, run_id, {lead.url: notes[lead.url] for lead in leads if lead.url in notes}
-        )
+        await save_feed_texts(session, run_id, result.texts)
         await session.commit()
-
-    log.info(
-        "releases: fetched %d from %d repos, %d new, %d leads to write",
-        len(releases),
-        len(repos),
-        sum(item.inserted for item in saved.values()),
-        len(leads),
-    )
+    log.info("%s: fetched %d items, %d leads to write", beat, result.fetched, len(result.leads))
     return {
-        "leads": leads,
+        "leads": result.leads,
         "stats": RunStats(
-            items_fetched_by_beat={Beat.RELEASES: len(releases)},
-            errors=errors,
-            timings_ms={"reporter.fetch": _ms(started)},
+            items_fetched_by_beat={beat: result.fetched},
+            errors=result.errors,
+            timings_ms={f"reporter.{beat}.fetch": _ms(started)},
         ),
     }
 
@@ -118,13 +115,17 @@ async def fetch(state: ReporterState, runtime: Runtime[NewsroomContext]) -> Repo
 async def write(state: ReporterState, runtime: Runtime[NewsroomContext]) -> ReporterUpdate:
     started = time.perf_counter()
     ctx = runtime.context
-    # A release without notes (e.g. only on PyPI) has nothing to report or check against.
-    leads = [lead for lead in state.get("leads", []) if lead.has_notes]
+    assignment = state["assignment"]
+    beat = assignment.beat
+    timing = f"reporter.{beat}.write"
+    # A lead without text (a release only on PyPI, an unreadable article) has nothing to
+    # report or check against.
+    leads = [lead for lead in state.get("leads", []) if lead.has_text]
     if not leads:
-        return {"candidates": [], "stats": RunStats(timings_ms={"reporter.write": _ms(started)})}
+        return {"candidates": [], "stats": RunStats(timings_ms={timing: _ms(started)})}
 
     async with ctx.db() as session:
-        notes = await load_feed_texts(
+        texts = await load_feed_texts(
             session, uuid.UUID(state["run_id"]), (lead.url for lead in leads)
         )
 
@@ -132,43 +133,43 @@ async def write(state: ReporterState, runtime: Runtime[NewsroomContext]) -> Repo
     errors: list[RunError] = []
     batches = [leads[i : i + BATCH_SIZE] for i in range(0, len(leads), BATCH_SIZE)]
 
-    async def write_batch(batch: Sequence[ReleaseLead]) -> list[StoryCandidate]:
-        releases = [
-            ReleaseNotes(
+    async def write_batch(batch: Sequence[Lead]) -> list[StoryCandidate]:
+        items = [
+            LeadText(
                 id=number,
-                repo=lead.repo,
-                package=lead.package,
-                version=lead.version,
+                title=lead.title,
                 published=lead.published_at.date() if lead.published_at else None,
-                notes=notes.get(lead.url, ""),
+                text=texts.get(lead.url, ""),
+                labels=lead.labels,
             )
             for number, lead in enumerate(batch, start=1)
         ]
         async with limit:
             try:
-                drafts = await ctx.write_releases(releases, state["assignment"])
+                drafts = await ctx.agents.write_stories(beat, items, assignment)
             except BudgetExceeded as exc:
                 errors.append(RunError(node="reporter.write", source="budget", message=str(exc)))
                 return []
             except Exception as exc:  # a failed batch must not cost the others
-                log.exception("releases batch failed")
+                log.exception("%s batch failed", beat)
                 message = f"{type(exc).__name__}: {exc}"
-                errors.append(RunError(node="reporter.write", message=message))
+                errors.append(RunError(node="reporter.write", source=beat, message=message))
                 return []
 
         candidates: list[StoryCandidate] = []
         written: set[int] = set()
         for draft in drafts.stories:
-            if not 1 <= draft.release_id <= len(batch) or draft.release_id in written:
+            if not 1 <= draft.item_id <= len(batch) or draft.item_id in written:
                 errors.append(
                     RunError(
                         node="reporter.write",
-                        message=f"draft cites unknown or repeated release {draft.release_id}",
+                        source=beat,
+                        message=f"draft cites unknown or repeated item {draft.item_id}",
                     )
                 )
                 continue
-            lead = batch[draft.release_id - 1]
-            written.add(draft.release_id)
+            lead = batch[draft.item_id - 1]
+            written.add(draft.item_id)
             try:
                 candidates.append(to_candidate(draft, lead))
             except ValidationError as exc:
@@ -181,9 +182,9 @@ async def write(state: ReporterState, runtime: Runtime[NewsroomContext]) -> Repo
                     )
                 )
         for skipped in drafts.skipped:
-            if 1 <= skipped.release_id <= len(batch):
-                lead = batch[skipped.release_id - 1]
-                log.info("releases: skipped %s %s: %s", lead.repo, lead.version, skipped.reason)
+            if 1 <= skipped.item_id <= len(batch):
+                lead = batch[skipped.item_id - 1]
+                log.info("%s: skipped %s: %s", beat, lead.title, skipped.reason)
         return candidates
 
     results = await asyncio.gather(*(write_batch(batch) for batch in batches))
@@ -191,9 +192,7 @@ async def write(state: ReporterState, runtime: Runtime[NewsroomContext]) -> Repo
     return {
         "candidates": candidates,
         "stats": RunStats(
-            candidates=len(candidates),
-            errors=errors,
-            timings_ms={"reporter.write": _ms(started)},
+            candidates=len(candidates), errors=errors, timings_ms={timing: _ms(started)}
         ),
     }
 

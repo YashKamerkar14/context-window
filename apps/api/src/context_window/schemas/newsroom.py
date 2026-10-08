@@ -23,6 +23,8 @@ class BeatAssignment(_Model):
     beat: Beat
     focus: str = Field(description="What the reporter should look for today")
     max_items: int = Field(ge=1, le=200)
+    # Community beat: a Hacker News title must contain one of these (PLAN.md 2).
+    keywords: list[str] = Field(default_factory=list[str])
 
 
 class Claim(_Model):

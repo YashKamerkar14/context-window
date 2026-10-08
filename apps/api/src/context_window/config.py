@@ -52,12 +52,25 @@ class Settings(BaseSettings):
     # JSON in the environment: {"<model>": {"in": 0.10, "out": 0.50}}.
     model_prices: dict[str, ModelPrice] = Field(default_factory=dict[str, ModelPrice])
 
+    # Embeddings. The model must produce `embedding_dim` dimensions and have a price.
+    embedding_provider: str = "openrouter"
+    embedding_model: str | None = None
+    embedding_api_key: SecretStr | None = None
+
+    # Ranking and merging (PLAN.md 6.3 and 6.4). Thresholds are cosine similarities and
+    # depend on the embedding model: see evals/calibration for how they were chosen.
+    max_stories: int = Field(default=10, ge=1)
+    fact_check_pool: int = Field(default=14, ge=1)
+    merge_threshold: float = Field(default=0.85, ge=0, le=1)
+    merge_ask_threshold: float = Field(default=0.75, ge=0, le=1)
+    suppress_threshold: float = Field(default=0.88, ge=0, le=1)
+
     # Run limits (PLAN.md 6.5).
     max_items_per_beat: int = Field(default=40, ge=1, le=200)
     max_model_calls_per_run: int = Field(default=150, ge=1)
     max_cost_per_run_usd: float = Field(default=1.50, gt=0)
 
-    # Tracing. LangSmith reads these from the process environment; see export_tracing_env.
+    # Tracing. LangSmith reads these from the process environment; see tracing.py.
     langsmith_api_key: SecretStr | None = None
     langsmith_project: str = "context-window"
     langsmith_tracing: bool = True
@@ -87,6 +100,22 @@ class Settings(BaseSettings):
                 f"MODEL_PRICES has no entry for {name!r}; the budget cannot price its calls."
             )
         return name
+
+    def require_embedding_model(self) -> str:
+        name = self.embedding_model
+        if not name:
+            raise RuntimeError("Set EMBEDDING_MODEL in the environment.")
+        if name not in self.model_prices:
+            raise RuntimeError(
+                f"MODEL_PRICES has no entry for {name!r}; the budget cannot price its calls."
+            )
+        return name
+
+    def embedding_key(self) -> str:
+        key = self.embedding_api_key or self.model_api_key
+        if key is None:
+            raise RuntimeError("Set EMBEDDING_API_KEY (or MODEL_API_KEY) in the environment.")
+        return key.get_secret_value()
 
     def require_direct_url(self) -> str:
         """The non-pooled URL, falling back to the pooled one when only that is set."""

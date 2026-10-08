@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from context_window.config import Settings
 from context_window.db.models import Item, Source
 from context_window.db.queries import NewItem, save_items
-from context_window.runner import assignments_for, consume_candidates, run_date_for
+from context_window.runner import consume_candidates, run_date_for
 from context_window.schemas.enums import Beat
 from context_window.schemas.newsroom import StoryCandidate
 from context_window.settings_file import SettingsFile, SourceSpec, sync_settings
@@ -21,12 +21,6 @@ def test_run_date_is_today_in_the_briefing_time_zone() -> None:
     evening_utc = dt.datetime(2026, 10, 8, 20, 0, tzinfo=dt.UTC)
     assert run_date_for(_settings(briefing_tz="Asia/Kolkata"), evening_utc) == dt.date(2026, 10, 9)
     assert run_date_for(_settings(briefing_tz="UTC"), evening_utc) == dt.date(2026, 10, 8)
-
-
-def test_assignments_use_the_item_cap() -> None:
-    [assignment] = assignments_for(_settings(max_items_per_beat=12), [Beat.RELEASES])
-    assert assignment.beat is Beat.RELEASES and assignment.max_items == 12
-    assert "breaking changes" in assignment.focus
 
 
 async def test_consume_marks_every_item_behind_the_candidates(session: AsyncSession) -> None:

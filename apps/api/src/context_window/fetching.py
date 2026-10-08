@@ -17,9 +17,10 @@ from context_window.db.models import FetchCache
 from context_window.mcp_client import NewsroomTools
 
 CACHE_RETENTION = dt.timedelta(days=7)
-# Feed text (release notes, feed summaries) is cached next to pages under its own key, so
-# it never collides with the page at the same URL. It is the fact-checker's fallback
-# evidence when the page itself cannot be fetched (PLAN.md 6.6).
+# The text a reporter wrote from (release notes, a feed summary, or the main text of the
+# page) is cached next to pages under its own key, so it never collides with the page at
+# the same URL. It is the fact-checker's fallback evidence when the page itself cannot be
+# fetched (PLAN.md 6.6).
 FEED_PREFIX = "feed:"
 FEED_STATUS = "feed"
 
@@ -34,19 +35,38 @@ async def fetch_page_cached(
     if cached is not None:
         return PageResult.model_validate_json(cached)
 
-    page = PageResult.model_validate(await tools.call("web_fetch", "fetch_page", {"url": url}))
-    await session.execute(
-        insert(FetchCache)
-        .values(run_id=run_id, url=url, status=page.status, body=page.model_dump_json())
-        .on_conflict_do_nothing(index_elements=[FetchCache.run_id, FetchCache.url])
-    )
+    page = await fetch_page(tools, url)
+    await save_pages(session, run_id, [page])
     return page
+
+
+async def fetch_page(tools: NewsroomTools, url: str) -> PageResult:
+    return PageResult.model_validate(await tools.call("web_fetch", "fetch_page", {"url": url}))
+
+
+async def save_pages(session: AsyncSession, run_id: uuid.UUID, pages: Iterable[PageResult]) -> None:
+    """Cache fetched pages for this run, keyed by the URL that was requested."""
+    rows = {
+        page.url: {
+            "run_id": run_id,
+            "url": page.url,
+            "status": page.status,
+            "body": page.model_dump_json(),
+        }
+        for page in pages
+    }
+    if rows:
+        await session.execute(
+            insert(FetchCache)
+            .values(list(rows.values()))
+            .on_conflict_do_nothing(index_elements=[FetchCache.run_id, FetchCache.url])
+        )
 
 
 async def save_feed_texts(
     session: AsyncSession, run_id: uuid.UUID, texts: Mapping[str, str]
 ) -> None:
-    """Store feed text for this run, keyed by the item's URL. Re-saving replaces it."""
+    """Store source text for this run, keyed by the item's URL. Re-saving replaces it."""
     if not texts:
         return
     stmt = insert(FetchCache).values(
@@ -65,7 +85,7 @@ async def save_feed_texts(
 async def load_feed_texts(
     session: AsyncSession, run_id: uuid.UUID, urls: Iterable[str]
 ) -> dict[str, str]:
-    """Feed text saved for this run, by item URL. Missing URLs are left out."""
+    """Source text saved for this run, by item URL. Missing URLs are left out."""
     keys = [FEED_PREFIX + url for url in urls]
     if not keys:
         return {}
