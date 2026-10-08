@@ -66,3 +66,40 @@ def test_database_url_is_hidden_in_test_output() -> None:
     assert "hunter2" not in repr(url)
     assert url == "postgresql://u:hunter2@h/db"
     assert f"{url}" == "postgresql://u:hunter2@h/db"
+
+
+def test_model_prices_parse_from_json(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("MODEL_PRICES", '{"vendor/fast": {"in": 0.1, "out": 0.5}}')
+    settings = _settings(model_fast="vendor/fast")
+    assert settings.model_name("fast") == "vendor/fast"
+    assert settings.model_prices["vendor/fast"].output == 0.5
+
+
+def test_model_without_a_price_is_refused() -> None:
+    settings = _settings(model_fast="vendor/fast")
+    with pytest.raises(RuntimeError, match="MODEL_PRICES has no entry"):
+        settings.model_name("fast")
+    with pytest.raises(RuntimeError, match="MODEL_STRONG"):
+        settings.model_name("strong")
+
+
+def test_chat_model_routes_strictly_and_charges_the_budget(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from langchain_openrouter import ChatOpenRouter
+
+    from context_window.budget import BudgetCallback
+    from context_window.models import chat_model
+
+    monkeypatch.setenv("MODEL_PRICES", '{"vendor/fast": {"in": 0.1, "out": 0.5}}')
+    settings = _settings(
+        model_provider="openrouter",
+        model_fast="vendor/fast",
+        model_api_key="sk-test",
+    )
+    model = chat_model(settings, "fast")
+    assert isinstance(model, ChatOpenRouter)
+    assert model.model_name == "vendor/fast"
+    assert model.openrouter_provider == {"require_parameters": True}
+    assert isinstance(model.callbacks, list)
+    assert any(isinstance(c, BudgetCallback) for c in model.callbacks)
