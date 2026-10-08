@@ -2,3 +2,6 @@
 *.png binary
 *.jpg binary
 *.ico binary
+
+# Recorded HTTP responses must stay byte-for-byte as received.
+mcp-servers/tests/fixtures/** -text
