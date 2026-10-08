@@ -1,0 +1,63 @@
+[project]
+name = "context-window-mcp"
+version = "0.1.0"
+description = "Context Window MCP servers: arXiv, Hugging Face papers, GitHub releases, RSS, Hacker News and web fetch"
+authors = [
+    { name = "YashKamerkar14", email = "yashkamerkar14@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "fastmcp>=4.0.11",
+    "feedparser>=6.0.14",
+    "httpx>=0.28.1",
+    "pydantic>=2.14.0",
+    "trafilatura>=2.3.1",
+]
+
+[project.scripts]
+cw-mcp-rss = "context_window_mcp.rss:main"
+cw-mcp-github-releases = "context_window_mcp.github_releases:main"
+cw-mcp-arxiv = "context_window_mcp.arxiv:main"
+cw-mcp-hf-papers = "context_window_mcp.hf_papers:main"
+cw-mcp-hackernews = "context_window_mcp.hackernews:main"
+cw-mcp-web-fetch = "context_window_mcp.web_fetch:main"
+
+[build-system]
+requires = ["uv_build>=0.12.12,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.414",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "ruff>=0.16.10",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "ASYNC", "RUF"]
+
+[tool.pyright]
+include = ["src", "tests", "scripts"]
+pythonVersion = "3.12"
+typeCheckingMode = "strict"
+# feedparser and lxml ship without type information; their use is wrapped and cast.
+reportMissingTypeStubs = false
+venvPath = "."
+venv = ".venv"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+markers = ["live: calls the real APIs; excluded by default and in CI"]
+addopts = "-m 'not live'"
+
+[tool.uv]
+# Copy packages into .venv instead of hardlinking from uv's cache: OneDrive folders
+# reject hardlinks ("incompatible hardlinks", os error 396), which left installs half-done.
+link-mode = "copy"
