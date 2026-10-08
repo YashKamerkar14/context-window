@@ -11,6 +11,7 @@ from context_window import aio
 from context_window.config import get_settings
 
 if TYPE_CHECKING:
+    from context_window.runner import RunResult
     from context_window.settings_file import SettingsFile, SyncReport
 
 log = logging.getLogger("cw")
@@ -22,6 +23,22 @@ def _build_parser() -> argparse.ArgumentParser:
 
     api = sub.add_parser("api", help="serve the HTTP API")
     api.add_argument("--reload", action="store_true", help="reload on code changes")
+
+    run = sub.add_parser("run", help="run the newsroom once")
+    run.add_argument(
+        "--beat",
+        action="append",
+        choices=["releases"],
+        help="beat to report (repeatable; default: releases). Other beats arrive in Phase 5",
+    )
+    run.add_argument(
+        "--consume",
+        action="store_true",
+        help=(
+            "dev only: mark the candidates' items as consumed, as publishing will, so the "
+            "next run skips them"
+        ),
+    )
 
     worker = sub.add_parser("worker", help="run the background worker")
     worker.add_argument("--once", action="store_true", help="heartbeat once and exit")
@@ -66,6 +83,8 @@ def main(argv: list[str] | None = None) -> None:
 
     if args.command == "api":
         _serve_api(reload=args.reload)
+    elif args.command == "run":
+        _run(args.beat or ["releases"], consume=args.consume)
     elif args.command == "worker":
         from context_window.worker import run_worker
 
@@ -101,6 +120,55 @@ async def _mcp(command: str, server: str, tool: str, arguments: str) -> None:
             raise SystemExit("arguments must be a JSON object")
         result = await tools.call(server, tool, parsed)  # pyright: ignore[reportUnknownArgumentType]
         print(json.dumps(result, indent=2, ensure_ascii=False))
+
+
+def _run(beats: list[str], *, consume: bool) -> None:
+    from context_window.db.queries import RunAlreadyActiveError
+    from context_window.runner import run_newsroom
+    from context_window.schemas.enums import Beat
+
+    settings = get_settings()
+    selected = [Beat(b) for b in dict.fromkeys(beats)]
+    try:
+        result = aio.run(run_newsroom(settings, selected, consume=consume))
+    except RunAlreadyActiveError as exc:
+        raise SystemExit(f"{exc}. Wait for it to finish, or mark it failed.") from exc
+    _print_run(result)
+
+
+def _print_run(result: "RunResult") -> None:
+    print()
+    print(f"Run {result.run_id} ({result.run_date})")
+    print(f"{len(result.candidates)} story candidates")
+    print()
+    for number, story in enumerate(result.candidates, start=1):
+        breaking = "  [BREAKING]" if story.is_breaking_change else ""
+        print(f"{number}. {story.headline}{breaking}")
+        print(f"   {story.summary}")
+        print(f"   Why it matters: {story.why_it_matters}")
+        for entry in story.sentence_claim_map:
+            print(f'   - "{entry.sentence}" <- {", ".join(entry.claim_ids)}')
+        for claim in story.claims:
+            print(f"     {claim.id}: {claim.text}")
+        print(f"   Sources: {', '.join(story.source_urls)}")
+        print()
+
+    stats, budget = result.stats, result.budget
+    fetched = ", ".join(f"{beat} {n}" for beat, n in stats.items_fetched_by_beat.items())
+    print(f"Items fetched: {fetched or 'none'}")
+    print(
+        f"Model calls: {stats.model_calls}, tokens in {stats.tokens_in:,}, out {stats.tokens_out:,}"
+    )
+    print(
+        f"Cost: ${budget.cost_usd:.5f} by the price table, "
+        f"${budget.reported_cost_usd:.5f} reported by the provider"
+    )
+    print("Timings: " + ", ".join(f"{node} {ms} ms" for node, ms in stats.timings_ms.items()))
+    if result.consumed_items:
+        print(f"Marked {result.consumed_items} items consumed (--consume)")
+    for error in stats.errors:
+        source = f" [{error.source}]" if error.source else ""
+        print(f"Error in {error.node}{source}: {error.message}")
 
 
 def _serve_api(*, reload: bool) -> None:
