@@ -738,6 +738,10 @@ BRIEFING_EMAIL_TO=
 
 ## 14. After version 1
 
+- True live streaming: run the API on an always-on host (for example Railway) and replace
+  the 2-second polling with SSE from `run_events` (`Last-Event-ID` replay, 15 s heartbeat).
+  The events table and endpoint shape are already designed for this, so it is a swap,
+  not a rewrite.
 - A settings UI for the watchlist, sources and interests.
 - npm release tracking through the registry JSON.
 - A weekly digest that picks the most important stories of the week.
