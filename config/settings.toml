@@ -1,0 +1,214 @@
+# Context Window settings: what the newsroom reads and what the reader cares about.
+# Load into the database with `cw settings load`. This file is the source of truth:
+# sources and repos removed here are disabled, interests removed here are deleted.
+#
+# Every feed and repo below was checked live on 2026-10-08. Anthropic, Meta AI and
+# Mistral publish no RSS feed, so the industry beat cannot follow their blogs yet.
+
+# --- Research ------------------------------------------------------------------------
+
+[[sources]]
+name = "Hugging Face daily papers"
+beat = "research"
+kind = "hf_papers"
+url = "https://huggingface.co/api/daily_papers"
+authority = 3
+
+[[sources]]
+name = "arXiv"
+beat = "research"
+kind = "arxiv"
+url = "https://export.arxiv.org/api/query"
+authority = 3
+# arXiv asks for at most one request every 3 seconds.
+options = { categories = ["cs.AI", "cs.CL", "cs.LG"], min_interval_seconds = 3 }
+
+# --- Releases ------------------------------------------------------------------------
+
+[[sources]]
+name = "GitHub Releases"
+beat = "releases"
+kind = "github_releases"
+url = "https://api.github.com/"
+authority = 5
+
+[[sources]]
+name = "PyPI releases"
+beat = "releases"
+kind = "pypi_releases"
+url = "https://pypi.org/rss/project/"
+authority = 4
+options = { feed_template = "https://pypi.org/rss/project/{package}/releases.xml" }
+
+# --- Industry (official blogs) -------------------------------------------------------
+
+[[sources]]
+name = "OpenAI News"
+beat = "industry"
+kind = "rss"
+url = "https://openai.com/news/rss.xml"
+authority = 5
+
+[[sources]]
+name = "Google DeepMind Blog"
+beat = "industry"
+kind = "rss"
+url = "https://deepmind.google/blog/rss.xml"
+authority = 5
+
+[[sources]]
+name = "Google Research Blog"
+beat = "industry"
+kind = "rss"
+url = "https://research.google/blog/rss/"
+authority = 5
+
+[[sources]]
+name = "Google AI (The Keyword)"
+beat = "industry"
+kind = "rss"
+url = "https://blog.google/technology/ai/rss/"
+authority = 4
+
+[[sources]]
+name = "Hugging Face Blog"
+beat = "industry"
+kind = "rss"
+url = "https://huggingface.co/blog/feed.xml"
+authority = 4
+
+[[sources]]
+name = "Microsoft Research Blog"
+beat = "industry"
+kind = "rss"
+url = "https://www.microsoft.com/en-us/research/feed/"
+authority = 4
+
+[[sources]]
+name = "GitHub Blog: AI and ML"
+beat = "industry"
+kind = "rss"
+url = "https://github.blog/ai-and-ml/feed/"
+authority = 4
+
+[[sources]]
+name = "NVIDIA Technical Blog"
+beat = "industry"
+kind = "rss"
+url = "https://developer.nvidia.com/blog/feed"
+authority = 3
+
+[[sources]]
+name = "AWS Machine Learning Blog"
+beat = "industry"
+kind = "rss"
+url = "https://aws.amazon.com/blogs/machine-learning/feed/"
+authority = 3
+
+# --- Community -----------------------------------------------------------------------
+
+[[sources]]
+name = "Hacker News"
+beat = "community"
+kind = "hackernews"
+url = "https://hn.algolia.com/api/v1/search_by_date"
+authority = 2
+options = { min_points = 50, window_hours = 24 }
+
+# --- Repo watchlist (releases beat) --------------------------------------------------
+# tag_pattern: a Python regex the release tag must fully match. Monorepos publish many
+# packages from one repo, so the pattern picks the package we care about.
+
+[[watchlist]]
+owner = "langchain-ai"
+repo = "langgraph"
+pypi_package = "langgraph"
+tag_pattern = '\d+\.\d+\.\d+'
+
+[[watchlist]]
+owner = "langchain-ai"
+repo = "langchain"
+pypi_package = "langchain-core"
+tag_pattern = 'langchain(-core)?==\d+\.\d+\.\d+'
+
+[[watchlist]]
+owner = "langchain-ai"
+repo = "langchain-mcp-adapters"
+pypi_package = "langchain-mcp-adapters"
+tag_pattern = 'langchain-mcp-adapters==\d+\.\d+\.\d+'
+
+[[watchlist]]
+owner = "langchain-ai"
+repo = "langsmith-sdk"
+pypi_package = "langsmith"
+tag_pattern = 'v\d+\.\d+\.\d+'
+
+[[watchlist]]
+owner = "modelcontextprotocol"
+repo = "python-sdk"
+pypi_package = "mcp"
+tag_pattern = 'v\d+\.\d+\.\d+'
+
+[[watchlist]]
+owner = "PrefectHQ"
+repo = "fastmcp"
+pypi_package = "fastmcp"
+tag_pattern = 'v\d+\.\d+\.\d+'
+
+[[watchlist]]
+owner = "anthropics"
+repo = "anthropic-sdk-python"
+pypi_package = "anthropic"
+tag_pattern = 'v\d+\.\d+\.\d+'
+
+[[watchlist]]
+owner = "openai"
+repo = "openai-python"
+pypi_package = "openai"
+tag_pattern = 'v\d+\.\d+\.\d+'
+
+[[watchlist]]
+owner = "pydantic"
+repo = "pydantic-ai"
+pypi_package = "pydantic-ai"
+tag_pattern = 'v\d+\.\d+\.\d+'
+
+[[watchlist]]
+owner = "huggingface"
+repo = "transformers"
+pypi_package = "transformers"
+tag_pattern = 'v\d+\.\d+\.\d+'
+
+[[watchlist]]
+owner = "vllm-project"
+repo = "vllm"
+pypi_package = "vllm"
+tag_pattern = 'v\d+\.\d+\.\d+'
+
+[[watchlist]]
+owner = "ollama"
+repo = "ollama"
+tag_pattern = 'v\d+\.\d+\.\d+'
+
+# --- Interests -----------------------------------------------------------------------
+# `description` is the text that gets embedded for ranking; make it specific.
+
+[[interests]]
+topic = "Agent frameworks"
+description = "Frameworks and patterns for building LLM agents: LangGraph, multi-agent orchestration, tool calling, planning, memory and durable execution."
+
+[[interests]]
+topic = "Evaluation"
+description = "Evaluating LLM applications and agents: benchmarks, LLM-as-judge, eval datasets, regression testing, tracing and observability."
+
+[[interests]]
+topic = "MCP"
+description = "The Model Context Protocol: MCP servers and clients, SDKs, tool integration and the protocol specification."
+
+[[interests]]
+topic = "Retrieval"
+description = "Retrieval-augmented generation: embeddings, vector databases, rerankers, chunking, hybrid search and long-context retrieval."
+
+[[interests]]
+topic = "Model releases"
+description = "New and updated foundation models from AI labs: capabilities, context windows, pricing, open weights and API changes."
