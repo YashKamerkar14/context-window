@@ -164,6 +164,7 @@ def _print_run(result: "RunResult") -> None:
         f"${budget.reported_cost_usd:.5f} reported by the provider"
     )
     print("Timings: " + ", ".join(f"{node} {ms} ms" for node, ms in stats.timings_ms.items()))
+    print(f"Trace: {result.trace_url or 'not available (is LANGSMITH_API_KEY set?)'}")
     if result.consumed_items:
         print(f"Marked {result.consumed_items} items consumed (--consume)")
     for error in stats.errors:

@@ -36,6 +36,7 @@ from context_window.mcp_client import NewsroomTools
 from context_window.models import chat_model
 from context_window.schemas.enums import Beat, RunStatus, RunTrigger
 from context_window.schemas.newsroom import BeatAssignment, RunError, RunStats, StoryCandidate
+from context_window.tracing import configure_tracing, flush_traces, trace_url
 
 log = logging.getLogger(__name__)
 
@@ -56,6 +57,7 @@ class RunResult:
     stats: RunStats
     budget: Budget
     consumed_items: int
+    trace_url: str | None
 
 
 def run_date_for(settings: Settings, now: dt.datetime | None = None) -> dt.date:
@@ -114,12 +116,18 @@ async def _finish(
     run_id: uuid.UUID,
     status: RunStatus,
     stats: RunStats,
+    trace: str | None = None,
 ) -> None:
     async with sessions() as session:
         await session.execute(
             update(Run)
             .where(Run.id == run_id)
-            .values(status=status, finished_at=func.now(), stats=stats.model_dump(mode="json"))
+            .values(
+                status=status,
+                finished_at=func.now(),
+                stats=stats.model_dump(mode="json"),
+                trace_url=trace,
+            )
         )
         await session.commit()
 
@@ -132,6 +140,7 @@ async def run_newsroom(
     consume: bool = False,
 ) -> RunResult:
     url = settings.require_direct_url()
+    tracing = configure_tracing(settings)
     engine = make_engine(url)
     sessions = make_sessionmaker(engine)
     try:
@@ -154,6 +163,10 @@ async def run_newsroom(
                 sessions, run.id, RunStatus.FAILED, budget.stats().merge(RunStats(errors=[error]))
             )
             raise
+        finally:
+            if tracing:
+                await asyncio.to_thread(flush_traces)
+        trace = await trace_url(settings, run.id) if tracing else None
 
         candidates: list[StoryCandidate] = state.get("candidates", [])
         stats: RunStats = state.get("stats") or RunStats()
@@ -163,8 +176,8 @@ async def run_newsroom(
             async with sessions() as session:
                 consumed = await consume_candidates(session, candidates, at=dt.datetime.now(dt.UTC))
                 await session.commit()
-        await _finish(sessions, run.id, RunStatus.REJECTED, stats)
-        return RunResult(run.id, run_date, candidates, stats, budget, consumed)
+        await _finish(sessions, run.id, RunStatus.REJECTED, stats, trace)
+        return RunResult(run.id, run_date, candidates, stats, budget, consumed, trace)
     finally:
         await engine.dispose()
 
