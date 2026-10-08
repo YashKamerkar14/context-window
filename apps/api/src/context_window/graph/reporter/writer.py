@@ -30,9 +30,10 @@ For each item, either write one story or skip it with a short reason.
 
 Each story has:
 - headline: at most 12 words, naming the subject concretely.
-- claims: one to four short facts with ids "c1", "c2", and so on. Each claim must be \
-stated in the item's text and checkable against it alone. No opinions, no guesses, \
-nothing from outside the text.
+- claims: one to four short facts with ids "c1", "c2", and so on; never five or more. \
+Pick the most important facts, or combine closely related ones into one claim. Each \
+claim must be stated in the item's text and checkable against it alone. No opinions, \
+no guesses, nothing from outside the text.
 - summary: one or two sentences in your own words, each listing the ids of the claims \
 it states. A sentence may say only what its claims say, and every claim must be cited \
 by a sentence.

@@ -122,18 +122,24 @@ def _clean(text: str) -> str:
 
 def to_candidate(draft: DraftStory, lead: Lead) -> StoryCandidate:
     """A validated candidate. URLs and keys come from the lead, never from the model.
-    Raises pydantic.ValidationError when the draft breaks the candidate's rules."""
+
+    Claims that no sentence cites are dropped first: the summary does not rely on them, so
+    removing them changes nothing the reader sees. Raises pydantic.ValidationError when
+    the draft still breaks the candidate's rules."""
     sentences = [
         SentenceClaims(sentence=_clean(s.text), claim_ids=[c.strip() for c in s.claim_ids])
         for s in draft.summary
     ]
+    cited = {claim_id for s in sentences for claim_id in s.claim_ids}
     return StoryCandidate(
         beat=lead.beat,
         headline=_clean(draft.headline),
         summary=" ".join(s.sentence for s in sentences),
         why_it_matters=_clean(draft.why_it_matters),
         claims=[
-            Claim(id=c.id.strip(), text=_clean(c.text), source_url=lead.url) for c in draft.claims
+            Claim(id=c.id.strip(), text=_clean(c.text), source_url=lead.url)
+            for c in draft.claims
+            if c.id.strip() in cited
         ],
         sentence_claim_map=sentences,
         source_urls=lead.source_urls,

@@ -228,7 +228,8 @@ async def test_invalid_drafts_and_writer_failures_become_errors(session: AsyncSe
     async def broken(
         beat: Beat, leads: Sequence[LeadText], assignment: BeatAssignment
     ) -> StoryDrafts:
-        story = DraftStory(
+        # An uncited claim is repaired away; five cited claims are too many.
+        repaired = DraftStory(
             item_id=leads[0].id,
             headline="x",
             summary=[DraftSentence(text="Says c1.", claim_ids=["c1"])],
@@ -236,12 +237,23 @@ async def test_invalid_drafts_and_writer_failures_become_errors(session: AsyncSe
             claims=[DraftClaim(id="c1", text="a"), DraftClaim(id="c2", text="uncited")],
             is_breaking_change=False,
         )
-        return StoryDrafts(stories=[story, story.model_copy(update={"item_id": 99})], skipped=[])
+        ids = [f"c{n}" for n in range(1, 6)]
+        too_many = DraftStory(
+            item_id=leads[1].id,
+            headline="z",
+            summary=[DraftSentence(text="Says five things.", claim_ids=ids)],
+            why_it_matters="y",
+            claims=[DraftClaim(id=i, text=i) for i in ids],
+            is_breaking_change=False,
+        )
+        unknown = repaired.model_copy(update={"item_id": 99})
+        return StoryDrafts(stories=[repaired, too_many, unknown], skipped=[])
 
     output = await _report(session, broken)
-    assert output["candidates"] == []
+    [story] = output["candidates"]
+    assert [c.id for c in story.claims] == ["c1"]
     messages = [e.message for e in output["stats"].errors]
-    assert any("not cited" in m for m in messages)
+    assert any("at most 4" in m for m in messages)
     assert any("unknown or repeated item 99" in m for m in messages)
 
     async def failing(
