@@ -413,6 +413,7 @@ dependencies = [
     { name = "alembic" },
     { name = "context-window-mcp" },
     { name = "fastapi", extra = ["standard"] },
+    { name = "jinja2" },
     { name = "langchain" },
     { name = "langchain-openrouter" },
     { name = "langgraph" },
@@ -421,6 +422,7 @@ dependencies = [
     { name = "pgvector" },
     { name = "psycopg", extra = ["binary", "pool"] },
     { name = "pydantic-settings" },
+    { name = "resend" },
     { name = "sqlalchemy", extra = ["asyncio"] },
     { name = "tzdata" },
 ]
@@ -439,6 +441,7 @@ requires-dist = [
     { name = "alembic", specifier = ">=1.20.0" },
     { name = "context-window-mcp", editable = "../../mcp-servers" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.142.4" },
+    { name = "jinja2", specifier = ">=3.1.6" },
     { name = "langchain", specifier = ">=1.4.3" },
     { name = "langchain-openrouter", specifier = ">=0.2.9" },
     { name = "langgraph", specifier = ">=1.2.14" },
@@ -447,6 +450,7 @@ requires-dist = [
     { name = "pgvector", specifier = ">=0.5.0" },
     { name = "psycopg", extras = ["binary", "pool"], specifier = ">=3.3.6" },
     { name = "pydantic-settings", specifier = ">=2.15.0" },
+    { name = "resend", specifier = ">=2.49.1" },
     { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.1.4" },
     { name = "tzdata", specifier = ">=2026.5" },
 ]
@@ -2704,6 +2708,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/f3/61/d7545dafb7ac2230c70d38d31cbfe4cc64f7144dc41f6e4e4b78ecd9f5bb/requests-toolbelt-1.0.0.tar.gz", hash = "sha256:7681a0a3d047012b5bdc0ee37d7f8f07ebe76ab08caeccfc3921ce23c88d5bc6", size = 206888, upload-time = "2023-05-01T04:11:33.229Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/3f/51/d4db610ef29373b879047326cbf6fa98b6c1969d6f6dc423279de2b1be2c/requests_toolbelt-1.0.0-py2.py3-none-any.whl", hash = "sha256:cccfdd665f0a24fcf4726e690f65639d272bb0637b9b92dfd91a5568ccf6bd06", size = 54481, upload-time = "2023-05-01T04:11:28.427Z" },
+]
+
+[[package]]
+name = "resend"
+version = "2.49.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "requests" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/99/b9/4e7d27aa30ce380f6abe1b2013d49b5a299a3d825e50e9e4a15be7d01b26/resend-2.49.1.tar.gz", hash = "sha256:4bc966667a8d8a0b622594b96be2e03727ea6e58762d10d25d44cfc068098c04", size = 63474, upload-time = "2026-10-03T01:10:02.489Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/14/24/137ae6c899017f4910d1a7552f8b2191f052299ad57f9c203fe3dc61707e/resend-2.49.1-py2.py3-none-any.whl", hash = "sha256:ffff525ffc1af2fb86a647bf92a5eb4e0ec8d5b7f2d588412c5d5380ff087de0", size = 95932, upload-time = "2026-10-03T01:10:01.137Z" },
 ]
 
 [[package]]

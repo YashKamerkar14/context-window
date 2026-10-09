@@ -120,3 +120,19 @@ async def session(database_url: str, migrated_schema: str) -> AsyncIterator[Asyn
                 await outer.rollback()
     finally:
         await engine.dispose()
+
+
+async def _setup_checkpointer(url: str) -> None:
+    from context_window.graph.checkpoint import postgres_checkpointer
+
+    async with postgres_checkpointer(url, max_size=1) as saver:
+        await saver.setup()
+
+
+@pytest.fixture(scope="session")
+def checkpoint_tables(database_url: str, migrated_schema: str) -> str:
+    """The checkpointer's tables in the test schema, created before any test transaction
+    opens: their setup builds indexes CONCURRENTLY, which waits for every open transaction."""
+    url = with_search_path(database_url, migrated_schema)
+    aio.run(_setup_checkpointer(url))
+    return url

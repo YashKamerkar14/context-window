@@ -4,7 +4,7 @@ import datetime as dt
 import uuid
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
-from typing import Any, cast
+from typing import Any, Protocol, cast
 
 from sqlalchemy import CursorResult, func, literal_column, select, update
 from sqlalchemy.dialects.postgresql import insert
@@ -144,6 +144,23 @@ async def mark_items_consumed(
     stmt = update(Item).where(Item.id.in_(ids), Item.consumed_at.is_(None)).values(consumed_at=at)
     result = cast(CursorResult[Any], await session.execute(stmt))
     return result.rowcount
+
+
+async def consume_stories(
+    session: AsyncSession, stories: Iterable["HasKeys"], *, at: dt.datetime
+) -> int:
+    """Mark the items behind these stories consumed, as publishing does. Returns the rows
+    changed."""
+    keys = {key for story in stories for key in story.canonical_keys}
+    if not keys:
+        return 0
+    ids = await session.scalars(select(Item.id).where(Item.canonical_key.in_(keys)))
+    return await mark_items_consumed(session, ids, at=at)
+
+
+class HasKeys(Protocol):
+    @property
+    def canonical_keys(self) -> list[str]: ...
 
 
 # --- Similar stories -------------------------------------------------------------------

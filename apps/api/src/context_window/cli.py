@@ -11,7 +11,7 @@ from context_window import aio
 from context_window.config import get_settings
 
 if TYPE_CHECKING:
-    from context_window.runner import RunResult
+    from context_window.runner import Outcome, RunResult
     from context_window.settings_file import SettingsFile, SyncReport
 
 log = logging.getLogger("cw")
@@ -24,7 +24,7 @@ def _build_parser() -> argparse.ArgumentParser:
     api = sub.add_parser("api", help="serve the HTTP API")
     api.add_argument("--reload", action="store_true", help="reload on code changes")
 
-    run = sub.add_parser("run", help="run the newsroom once")
+    run = sub.add_parser("run", help="run the newsroom for today")
     run.add_argument(
         "--beat",
         action="append",
@@ -32,16 +32,27 @@ def _build_parser() -> argparse.ArgumentParser:
         help="beat to report (repeatable; default: every enabled beat)",
     )
     run.add_argument(
-        "--consume",
-        action="store_true",
-        help=(
-            "dev only: mark the draft briefing's items as consumed, as publishing will, so "
-            "the next run skips them"
-        ),
+        "--force", action="store_true", help="run even if today's briefing is already published"
     )
     run.add_argument(
-        "--claims", action="store_true", help="also print each story's claims and claim map"
+        "--resend", action="store_true", help="email the briefing even if it was emailed before"
     )
+    run.add_argument("--claims", action="store_true", help="also print each story's claims")
+
+    resume = sub.add_parser("resume", help="continue a paused or interrupted run")
+    resume.add_argument("run_id", help="the run's id")
+
+    review = sub.add_parser("review", help="decide on a run waiting for review, then resume it")
+    review.add_argument("run_id", help="the run's id")
+    review.add_argument("action", choices=["approve", "reject"])
+    review.add_argument(
+        "--remove",
+        action="append",
+        default=[],
+        metavar="STORY_ID",
+        help="drop a story (repeatable)",
+    )
+    sub.add_parser("review-timeout", help="approve runs that have waited past the review timeout")
 
     worker = sub.add_parser("worker", help="run the background worker")
     worker.add_argument("--once", action="store_true", help="heartbeat once and exit")
@@ -101,7 +112,13 @@ def main(argv: list[str] | None = None) -> None:
     if args.command == "api":
         _serve_api(reload=args.reload)
     elif args.command == "run":
-        _run(args.beat or [], consume=args.consume, claims=args.claims)
+        _run(args.beat or [], force=args.force, resend=args.resend, claims=args.claims)
+    elif args.command == "resume":
+        _resume(args.run_id)
+    elif args.command == "review":
+        _review(args.run_id, args.action, args.remove)
+    elif args.command == "review-timeout":
+        _review_timeout()
     elif args.command == "worker":
         from context_window.worker import run_worker
 
@@ -143,66 +160,134 @@ async def _mcp(command: str, server: str, tool: str, arguments: str) -> None:
         print(json.dumps(result, indent=2, ensure_ascii=False))
 
 
-def _run(beats: list[str], *, consume: bool, claims: bool) -> None:
+def _run(beats: list[str], *, force: bool, resend: bool, claims: bool) -> None:
     from context_window.db.queries import RunAlreadyActiveError
-    from context_window.runner import run_newsroom
+    from context_window.runner import AlreadyPublishedError, run_newsroom
     from context_window.schemas.enums import Beat
 
     settings = get_settings()
     selected = [Beat(b) for b in dict.fromkeys(beats)]
     try:
-        result = aio.run(run_newsroom(settings, selected, consume=consume))
+        outcome = aio.run(run_newsroom(settings, selected, force=force, resend=resend))
     except RunAlreadyActiveError as exc:
-        raise SystemExit(f"{exc}. Wait for it to finish, or mark it failed.") from exc
-    _print_run(result, claims=claims)
+        raise SystemExit(f"{exc}. Resume it with `cw resume`, or wait for it.") from exc
+    except AlreadyPublishedError as exc:
+        raise SystemExit(str(exc)) from exc
+    _print_outcome(outcome, claims=claims)
+
+
+def _resume(run_id: str) -> None:
+    import uuid
+
+    from context_window.runner import NothingToResumeError, resume_run
+
+    try:
+        outcome = aio.run(resume_run(get_settings(), uuid.UUID(run_id)))
+    except NothingToResumeError as exc:
+        raise SystemExit(str(exc)) from exc
+    _print_outcome(outcome)
+
+
+def _review(run_id: str, action: str, remove: list[str]) -> None:
+    import uuid
+
+    from context_window.runner import NothingToResumeError, record_review
+    from context_window.schemas.newsroom import ReviewDecision
+
+    if action == "reject" and remove:
+        raise SystemExit("--remove only goes with approve")
+    decision = ReviewDecision(
+        action="edit" if remove else action,  # pyright: ignore[reportArgumentType]
+        removed_story_ids=remove,
+        decided_by="human",
+    )
+    try:
+        aio.run(record_review(get_settings(), uuid.UUID(run_id), decision))
+    except NothingToResumeError as exc:
+        raise SystemExit(str(exc)) from exc
+    print(f"decision saved: {decision.action}; resuming the run")
+    _resume(run_id)
+
+
+def _review_timeout() -> None:
+    from context_window.runner import review_timeouts
+
+    results = aio.run(review_timeouts(get_settings()))
+    if not results:
+        print("no run has waited past the review timeout")
+    for result in results:
+        _print_run(result)
+
+
+def _print_outcome(outcome: "Outcome", *, claims: bool = False) -> None:
+    for result in outcome.recovered:
+        print(f"Recovered run {result.run_id} ({result.run_date}): {result.status}")
+    if outcome.result is not None:
+        _print_run(outcome.result, claims=claims)
 
 
 def _print_run(result: "RunResult", *, claims: bool = False) -> None:
+    from context_window.schemas.enums import RunStatus
+
     print()
-    print(f"Run {result.run_id} ({result.run_date})")
+    print(f"Run {result.run_id} ({result.run_date}): {result.status}")
+    draft = result.draft
     print(
-        f"{len(result.candidates)} candidates -> {len(result.stories)} stories in the "
-        f"fact-check pool -> {len(result.draft.stories) if result.draft else 0} in the draft"
+        f"{len(result.candidates)} candidates -> {len(result.stories)} in the fact-check pool -> "
+        f"{len(result.verified)} verified, {len(result.dropped)} dropped -> "
+        f"{len(draft.stories) if draft else 0} in the briefing"
     )
     print()
-    draft_ids = {s.id for s in result.draft.stories} if result.draft else set[str]()
-    for number, story in enumerate(result.stories, start=1):
-        breaking = "  [BREAKING]" if story.is_breaking_change else ""
-        merged = f", merged from {story.merged_from}" if story.merged_from > 1 else ""
-        in_draft = "*" if story.id in draft_ids else " "
-        print(f"{in_draft}{number:>2}. [{story.beat}] {story.headline}{breaking}")
-        print(f"     score {story.score:.3f}{merged}")
-        print(f"     {story.summary}")
-        print(f"     Why it matters: {story.why_it_matters}")
-        if claims:
-            for entry in story.sentence_claim_map:
-                print(f'     - "{entry.sentence}" <- {", ".join(entry.claim_ids)}')
-            for claim in story.claims:
-                print(f"       {claim.id}: {claim.text}")
-        print(f"     Sources: {', '.join(story.source_urls)}")
+    if draft is not None:
+        light = " (a light day)" if draft.light_day else ""
+        print(f"Intro{light}: {draft.intro}")
         print()
-    if result.draft is not None:
-        light = " (light day)" if result.draft.light_day else ""
-        print(f"* in the draft briefing{light}. Intro: {result.draft.intro}")
+        for number, story in enumerate(draft.stories, start=1):
+            flags = "  [BREAKING]" if story.is_breaking_change else ""
+            flags += "  [edited by the editor]" if story.edited_by_editor else ""
+            print(f"{number:>2}. [{story.beat}] {story.headline}{flags}")
+            print(f"    id {story.id}, score {story.score:.3f}")
+            print(f"    {story.summary}")
+            print(f"    Why it matters: {story.why_it_matters}")
+            if claims:
+                for claim in story.claims:
+                    kind = f", {claim.evidence_kind}" if claim.evidence_kind else ""
+                    print(f"      {claim.id} [{claim.verdict}{kind}] {claim.text}")
+            print(f"    Sources: {', '.join(story.source_urls)}")
+            print()
+    for dropped in result.dropped:
+        print(f"Dropped ({dropped.reason}): [{dropped.beat}] {dropped.headline}")
+        if claims:
+            for claim in dropped.claims:
+                print(f"      {claim.id} [{claim.verdict}] {claim.text} -- {claim.reasoning}")
+    if result.dropped:
         print()
 
     stats, budget = result.stats, result.budget
     fetched = ", ".join(f"{beat} {n}" for beat, n in stats.items_fetched_by_beat.items())
     print(f"Items fetched: {fetched or 'none'}")
     print(
-        f"Model calls: {stats.model_calls}, tokens in {stats.tokens_in:,}, out {stats.tokens_out:,}"
+        f"Claims: {stats.claims_supported} supported, {stats.claims_unsupported} unsupported, "
+        f"{stats.claims_unclear} unclear"
     )
     print(
-        f"Cost: ${budget.cost_usd:.5f} by the price table, "
+        f"Model calls (whole run): {stats.model_calls}, tokens in {stats.tokens_in:,}, "
+        f"out {stats.tokens_out:,}, cost ${stats.cost_usd:.5f}"
+    )
+    print(
+        f"This execution: ${budget.cost_usd:.5f} by the price table, "
         f"${budget.reported_cost_usd:.5f} reported by the provider"
     )
-    print("Timings: " + ", ".join(f"{node} {ms} ms" for node, ms in stats.timings_ms.items()))
     print(f"Trace: {result.trace_url or 'not available (is LANGSMITH_API_KEY set?)'}")
-    if result.consumed_items:
-        print(f"Marked {result.consumed_items} items consumed (--consume)")
     for error in stats.errors:
         source = f" [{error.source}]" if error.source else ""
         print(f"Error in {error.node}{source}: {error.message}")
+    if result.status is RunStatus.AWAITING_REVIEW:
+        print()
+        print("The run is waiting for your review. Decide with one of:")
+        print(f"  cw review {result.run_id} approve")
+        print(f"  cw review {result.run_id} approve --remove STORY_ID")
+        print(f"  cw review {result.run_id} reject")
 
 
 async def _factcheck(command: str, *, force: bool) -> None:

@@ -76,6 +76,7 @@ def render_markdown(briefing: Briefing) -> str:
         lines += ["_A light day: fewer than five stories cleared the bar._", ""]
     for story in briefing.stories:
         flag = " (breaking change)" if story.is_breaking_change else ""
+        flag += " (edited by the editor)" if story.edited_by_editor else ""
         lines += [f"## {story.headline}{flag}", "", story.summary, ""]
         lines += [f"**Why it matters:** {story.why_it_matters}", ""]
         sources = ", ".join(f"[{_source_label(url)}]({url})" for url in story.source_urls)

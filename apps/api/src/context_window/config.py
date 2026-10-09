@@ -66,6 +66,17 @@ class Settings(BaseSettings):
     merge_ask_threshold: float = Field(default=0.70, ge=0, le=1)
     suppress_threshold: float = Field(default=0.84, ge=0, le=1)
 
+    # Review and publishing (PLAN.md 6.3). Manual locally: the run pauses for a decision.
+    # Auto in production: it approves itself. A paused run auto-approves after the timeout.
+    review_mode: Literal["manual", "auto"] = "manual"
+    review_timeout_hours: float = Field(default=3.0, gt=0)
+    resend_api_key: SecretStr | None = None
+    resend_from: str | None = None
+    briefing_email_to: str | None = None
+    # The web app's revalidate endpoint (Phase 8). Skipped until both are set.
+    web_origin: str | None = None
+    revalidate_secret: SecretStr | None = None
+
     # Run limits (PLAN.md 6.5).
     max_items_per_beat: int = Field(default=40, ge=1, le=200)
     max_model_calls_per_run: int = Field(default=150, ge=1)

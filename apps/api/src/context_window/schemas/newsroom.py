@@ -81,6 +81,8 @@ class Story(StoryCandidate):
     score: float = Field(ge=0.0, le=1.0)
     merged_from: int = Field(default=1, ge=1)
     attempts: int = Field(default=0, ge=0)
+    # Changed by the human reviewer after fact-checking; shown as such (PLAN.md 6.3).
+    edited_by_editor: bool = False
 
 
 class ClaimVerdict(_Model):
@@ -158,4 +160,4 @@ class ReviewDecision(_Model):
     action: Literal["approve", "edit", "reject"]
     edited_stories: list[Story] = Field(default_factory=list[Story])
     removed_story_ids: list[str] = Field(default_factory=list[str])
-    decided_by: Literal["human", "timeout"]
+    decided_by: Literal["human", "timeout", "auto"]

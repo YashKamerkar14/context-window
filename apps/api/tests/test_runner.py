@@ -5,8 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from context_window.config import Settings
 from context_window.db.models import Item, Source
-from context_window.db.queries import NewItem, save_items
-from context_window.runner import consume_candidates, run_date_for
+from context_window.db.queries import NewItem, consume_stories, save_items
+from context_window.runner import run_date_for
 from context_window.schemas.enums import Beat
 from context_window.schemas.newsroom import StoryCandidate
 from context_window.settings_file import SettingsFile, SourceSpec, sync_settings
@@ -46,7 +46,7 @@ async def test_consume_marks_every_item_behind_the_candidates(session: AsyncSess
         [NewItem(url=f"{gh}/1.2.14", title="a"), NewItem(url=f"{gh}/1.2.13", title="b")],
     )
     story = StoryCandidate.model_validate(candidate())  # keys: gh:...@1.2.14
-    assert await consume_candidates(session, [story], at=dt.datetime.now(dt.UTC)) == 1
+    assert await consume_stories(session, [story], at=dt.datetime.now(dt.UTC)) == 1
     consumed = await session.scalars(
         select(Item.canonical_key).where(Item.consumed_at.is_not(None))
     )

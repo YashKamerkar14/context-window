@@ -7,6 +7,7 @@ import pytest
 from alembic import command
 from alembic.autogenerate import compare_metadata
 from alembic.migration import MigrationContext
+from alembic.script import ScriptDirectory
 from sqlalchemy import Connection, inspect, text
 
 from context_window import aio
@@ -43,6 +44,9 @@ CHECKPOINT_TABLES = {
     "checkpoint_writes",
     "checkpoint_migrations",
 }
+
+# The newest migration, from the scripts themselves.
+HEAD = ScriptDirectory.from_config(alembic_config()).get_current_head()
 
 
 def _tables(conn: Connection, schema: str) -> set[str]:
@@ -102,7 +106,7 @@ async def test_upgrade_creates_every_table_and_matches_the_models(
 
             await conn.run_sync(upgrade_and_check)
             status = await db_status(conn)
-            assert status.revision == "0001"
+            assert status.revision == HEAD
             assert status.pgvector_version is not None
             assert status.embedding_column_type == "vector(1536)"
 

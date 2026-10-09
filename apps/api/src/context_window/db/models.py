@@ -164,6 +164,9 @@ class Run(Base):
     actions_run_url: Mapped[str | None] = mapped_column(Text)
     stats: Mapped[dict[str, Any]] = mapped_column(JSONB, server_default=sql_text("'{}'::jsonb"))
     trace_url: Mapped[str | None] = mapped_column(Text)
+    # Human review: when the run paused for it, and the decision that resumes it.
+    review_requested_at: Mapped[dt.datetime | None] = mapped_column(Timestamp)
+    review_decision: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
 
 
 class RunEvent(Base):

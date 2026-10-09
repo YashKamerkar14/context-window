@@ -1,8 +1,9 @@
 """The newsroom graph.
 
 plan_coverage -> one reporter per assignment, in parallel (`Send`) -> merge_and_rank ->
-one fact_check_story per pooled story, in parallel -> write_briefing -> check_draft.
-Review and publishing join in the next steps.
+one fact_check_story per pooled story, in parallel -> write_briefing -> check_draft ->
+human_review (pauses in manual mode) -> publish -> update_memory. A rejected review ends
+the run.
 """
 
 # LangGraph spans several distributions in one namespace, so pyright misses its py.typed
@@ -16,8 +17,10 @@ from context_window.factcheck.graph import build_fact_check_graph
 from context_window.graph.briefing import check_draft, write_briefing
 from context_window.graph.context import NewsroomContext
 from context_window.graph.editor import plan_coverage
+from context_window.graph.publish import publish, update_memory
 from context_window.graph.rank import merge_and_rank
 from context_window.graph.reporter.graph import build_reporter_graph
+from context_window.graph.review import after_review, human_review
 from context_window.graph.state import NewsroomState
 
 
@@ -49,6 +52,9 @@ def build_newsroom_graph() -> StateGraph[NewsroomState, NewsroomContext]:
     builder.add_node("fact_check", build_fact_check_graph())
     builder.add_node("write_briefing", write_briefing)
     builder.add_node("check_draft", check_draft)
+    builder.add_node("human_review", human_review)
+    builder.add_node("publish", publish)
+    builder.add_node("update_memory", update_memory)
     builder.add_edge(START, "plan_coverage")
     builder.add_conditional_edges("plan_coverage", assign_reporters, ["reporter", "merge_and_rank"])
     builder.add_edge("reporter", "merge_and_rank")
@@ -57,5 +63,8 @@ def build_newsroom_graph() -> StateGraph[NewsroomState, NewsroomContext]:
     )
     builder.add_edge("fact_check", "write_briefing")
     builder.add_edge("write_briefing", "check_draft")
-    builder.add_edge("check_draft", END)
+    builder.add_edge("check_draft", "human_review")
+    builder.add_conditional_edges("human_review", after_review, ["publish", END])
+    builder.add_edge("publish", "update_memory")
+    builder.add_edge("update_memory", END)
     return builder

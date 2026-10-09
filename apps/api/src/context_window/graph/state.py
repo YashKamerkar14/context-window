@@ -46,6 +46,8 @@ class NewsroomUpdate(TypedDict, total=False):
     dropped: Annotated[list[DroppedStory], operator.add]
     draft: Briefing | None
     review: ReviewDecision | None
+    published: bool
+    resend: bool  # input: email again even if this date's briefing was already emailed
     stats: Annotated[RunStats, merge_stats]
 
 
