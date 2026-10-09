@@ -14,6 +14,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from context_window.config import Settings
 from context_window.embeddings import Embedder
+from context_window.factcheck.judge import ClaimJudge
+from context_window.factcheck.rewrite import StoryRewriter
 from context_window.graph.reporter.drafts import LeadText, StoryDrafts
 from context_window.mcp_client import NewsroomTools
 from context_window.schemas.agents import CoverageBrief, CoveragePlan, StoryPair
@@ -32,12 +34,20 @@ SameEventJudge = Callable[[Sequence[StoryPair]], Awaitable[list[bool]]]
 IntroWriter = Callable[[dt.date, Sequence[Story], bool], Awaitable[str]]
 
 
+# Does the briefing's intro say only what its stories say?
+DraftChecker = Callable[[str, Sequence[Story]], Awaitable[bool]]
+
+
 @dataclass(frozen=True)
 class Agents:
     plan_coverage: CoveragePlanner
     write_stories: StoryWriter
     same_event: SameEventJudge
+    judge_claims: ClaimJudge  # fast
+    judge_unclear: ClaimJudge  # strong, for claims the fast judge found unclear
+    rewrite_story: StoryRewriter
     write_intro: IntroWriter
+    check_draft: DraftChecker
 
 
 def _utc_now() -> dt.datetime:

@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from context_window.db import models as db
 from context_window.db.queries import create_run
 from context_window.graph.newsroom import build_newsroom_graph
-from context_window.schemas.enums import Beat, BriefingStatus, RunTrigger, StoryStatus
+from context_window.schemas.enums import Beat, BriefingStatus, RunTrigger, StoryStatus, Verdict
 from context_window.settings_file import InterestSpec, RepoSpec, SettingsFile, sync_settings
 from tests import test_desks as desks
 from tests import test_reporter_releases as releases
@@ -118,10 +118,24 @@ async def test_the_whole_newsroom(session: AsyncSession) -> None:
     assert {s.beat for s in state["stories"]} == {Beat.RELEASES, Beat.RESEARCH, Beat.INDUSTRY}
     assert all(0 <= s.score <= 1 for s in state["stories"])
 
+    # Every pooled story was fact-checked (the stub judge supports everything) and saved
+    # with its verdicts; the rest stay candidates.
+    pool = {s.id for s in state["stories"]}
+    assert {s.id for s in state["verified"]} == pool and state["dropped"] == []
+    assert stats.checked == stats.verified == len(pool)
     saved = (await session.scalars(select(db.Story).where(db.Story.run_id == run.id))).all()
-    assert saved and all(
-        s.status is StoryStatus.CANDIDATE and s.embedding is not None for s in saved
-    )
+    assert all(s.embedding is not None for s in saved)
+    for row in saved:
+        expected = StoryStatus.VERIFIED if str(row.id) in pool else StoryStatus.CANDIDATE
+        assert row.status is expected
+    verdicts = (
+        await session.scalars(
+            select(db.Claim.verdict)
+            .join(db.Story, db.Story.id == db.Claim.story_id)
+            .where(db.Story.status == StoryStatus.VERIFIED)
+        )
+    ).all()
+    assert verdicts and set(verdicts) == {Verdict.SUPPORTED}
 
     briefing = await session.scalar(select(db.Briefing).where(db.Briefing.date == run.run_date))
     assert briefing is not None and briefing.status is BriefingStatus.DRAFT

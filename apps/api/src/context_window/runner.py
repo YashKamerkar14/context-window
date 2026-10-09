@@ -30,7 +30,9 @@ from context_window.db.models import Item, Run
 from context_window.db.queries import create_run, mark_items_consumed, touch_heartbeat
 from context_window.db.session import make_engine, make_sessionmaker
 from context_window.embeddings import make_embedder
-from context_window.graph.briefing import make_intro_writer
+from context_window.factcheck.judge import make_claim_judge
+from context_window.factcheck.rewrite import make_story_rewriter
+from context_window.graph.briefing import make_draft_checker, make_intro_writer
 from context_window.graph.checkpoint import postgres_checkpointer
 from context_window.graph.context import Agents, NewsroomContext
 from context_window.graph.editor import make_coverage_planner
@@ -188,7 +190,11 @@ async def _invoke(
         plan_coverage=make_coverage_planner(strong),
         write_stories=make_story_writer(fast),
         same_event=make_same_event_judge(fast),
+        judge_claims=make_claim_judge(fast, run_name="judge_claims"),
+        judge_unclear=make_claim_judge(strong, run_name="judge_unclear"),
+        rewrite_story=make_story_rewriter(fast),
         write_intro=make_intro_writer(strong),
+        check_draft=make_draft_checker(fast),
     )
     async with (
         NewsroomTools(settings=settings) as tools,

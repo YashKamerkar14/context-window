@@ -1,7 +1,8 @@
 """The newsroom graph.
 
 plan_coverage -> one reporter per assignment, in parallel (`Send`) -> merge_and_rank ->
-write_briefing. Fact-checking, review and publishing join in later phases.
+one fact_check_story per pooled story, in parallel -> write_briefing -> check_draft.
+Review and publishing join in the next steps.
 """
 
 # LangGraph spans several distributions in one namespace, so pyright misses its py.typed
@@ -11,7 +12,8 @@ write_briefing. Fact-checking, review and publishing join in later phases.
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Send
 
-from context_window.graph.briefing import write_briefing
+from context_window.factcheck.graph import build_fact_check_graph
+from context_window.graph.briefing import check_draft, write_briefing
 from context_window.graph.context import NewsroomContext
 from context_window.graph.editor import plan_coverage
 from context_window.graph.rank import merge_and_rank
@@ -31,16 +33,29 @@ def assign_reporters(state: NewsroomState) -> list[Send] | str:
     ]
 
 
+def assign_fact_checks(state: NewsroomState) -> list[Send] | str:
+    stories = state.get("stories", [])
+    if not stories:
+        return "write_briefing"
+    return [Send("fact_check", {"run_id": state["run_id"], "story": story}) for story in stories]
+
+
 def build_newsroom_graph() -> StateGraph[NewsroomState, NewsroomContext]:
     """The uncompiled graph; the caller compiles it with its checkpointer."""
     builder = StateGraph(NewsroomState, context_schema=NewsroomContext)
     builder.add_node("plan_coverage", plan_coverage)
     builder.add_node("reporter", build_reporter_graph())
     builder.add_node("merge_and_rank", merge_and_rank)
+    builder.add_node("fact_check", build_fact_check_graph())
     builder.add_node("write_briefing", write_briefing)
+    builder.add_node("check_draft", check_draft)
     builder.add_edge(START, "plan_coverage")
     builder.add_conditional_edges("plan_coverage", assign_reporters, ["reporter", "merge_and_rank"])
     builder.add_edge("reporter", "merge_and_rank")
-    builder.add_edge("merge_and_rank", "write_briefing")
-    builder.add_edge("write_briefing", END)
+    builder.add_conditional_edges(
+        "merge_and_rank", assign_fact_checks, ["fact_check", "write_briefing"]
+    )
+    builder.add_edge("fact_check", "write_briefing")
+    builder.add_edge("write_briefing", "check_draft")
+    builder.add_edge("check_draft", END)
     return builder

@@ -16,6 +16,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from context_window.config import Settings
 from context_window.embeddings import Vector
+from context_window.factcheck.judge import ClaimToCheck, Judgement
+from context_window.factcheck.rewrite import RewrittenStory
 from context_window.graph.context import Agents, NewsroomContext, StoryWriter
 from context_window.graph.reporter.drafts import (
     DraftClaim,
@@ -27,8 +29,8 @@ from context_window.graph.reporter.drafts import (
 )
 from context_window.mcp_client import NewsroomTools
 from context_window.schemas.agents import CoverageBrief, CoveragePlan, StoryPair
-from context_window.schemas.enums import Beat
-from context_window.schemas.newsroom import BeatAssignment, Story
+from context_window.schemas.enums import Beat, Verdict
+from context_window.schemas.newsroom import BeatAssignment, Claim, Story
 
 EMBED_DIM = 1536  # the database's vector width
 _WORD = re.compile(r"[a-z0-9]+(?:\.[0-9]+)*")
@@ -92,6 +94,18 @@ async def never_same(pairs: Sequence[StoryPair]) -> list[bool]:
     return [False for _ in pairs]
 
 
+async def all_supported(source: str, claims: Sequence[ClaimToCheck]) -> list[Judgement]:
+    return [Judgement(c.id, Verdict.SUPPORTED, "quoted", "stub") for c in claims]
+
+
+async def no_rewrite(story: Story, claims: Sequence[Claim], why_ok: bool) -> RewrittenStory:
+    raise AssertionError("no rewrite expected")
+
+
+async def intro_is_fine(intro: str, stories: Sequence[Story]) -> bool:
+    return True
+
+
 async def plain_intro(date: object, stories: Sequence[Story], light_day: bool) -> str:
     return f"{len(stories)} stories today."
 
@@ -101,7 +115,11 @@ def agents(**overrides: Any) -> Agents:
         "plan_coverage": plan_nothing,
         "write_stories": StubWriter(),
         "same_event": never_same,
+        "judge_claims": all_supported,
+        "judge_unclear": all_supported,
+        "rewrite_story": no_rewrite,
         "write_intro": plain_intro,
+        "check_draft": intro_is_fine,
     }
     return Agents(**(values | overrides))
 

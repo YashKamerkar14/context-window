@@ -243,7 +243,7 @@ async def _factcheck(command: str, *, force: bool) -> None:
                 outcomes, model=settings.model_name("fast"), today=dt.date.today().isoformat()
             )
             dataset.REPORT_FILE.parent.mkdir(parents=True, exist_ok=True)
-            dataset.REPORT_FILE.write_text(text, encoding="utf-8")
+            dataset.REPORT_FILE.write_text(text, encoding="utf-8", newline="\n")
             agree = sum(o.agrees for o in outcomes)
             print(f"agreement: {agree}/{len(outcomes)}; report: {dataset.REPORT_FILE}")
     print(f"cost: ${budget.cost_usd:.5f} ({budget.calls_started} calls)")

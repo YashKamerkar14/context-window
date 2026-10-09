@@ -153,3 +153,49 @@ def test_briefing_puts_breaking_releases_first_and_flags_light_days() -> None:
     assert body.startswith("# Context Window, 2026-10-09\n\nIntro.\n")
     assert "_A light day" in body and "(breaking change)" in body
     assert "**Why it matters:**" in body
+
+
+async def test_check_draft_reverts_an_unsupported_intro() -> None:
+    from contextlib import asynccontextmanager
+    from types import SimpleNamespace
+
+    from context_window.graph import briefing
+
+    stories = [_story(Beat.INDUSTRY, 0.9)]
+    draft = Briefing(
+        date=NOW.date(),
+        intro="It also cures cancer.",
+        stories=stories,
+        light_day=True,
+        stats=RunStats(),
+    )
+    saved: list[str] = []
+
+    async def reject(intro: str, given: object) -> bool:
+        return False
+
+    async def fake_save(ctx: object, run_id: object, b: Briefing, body: str) -> bool:
+        saved.append(body)
+        return True
+
+    @asynccontextmanager
+    async def nothing():  # pyright: ignore[reportUnusedFunction]
+        yield None
+
+    runtime = SimpleNamespace(context=SimpleNamespace(agents=SimpleNamespace(check_draft=reject)))
+    original = briefing.save_draft
+    briefing.save_draft = fake_save  # pyright: ignore[reportAttributeAccessIssue]
+    try:
+        out = await briefing.check_draft(
+            {
+                "run_id": "01a11d19-0aaa-7c8c-b33a-cdb085ba6fbe",
+                "run_date": NOW.date(),
+                "draft": draft,
+            },
+            runtime,  # pyright: ignore[reportArgumentType]
+        )
+    finally:
+        briefing.save_draft = original
+    reverted = out.get("draft")
+    assert reverted is not None and reverted.intro == default_intro(stories, True)
+    assert saved and "cures cancer" not in saved[0]

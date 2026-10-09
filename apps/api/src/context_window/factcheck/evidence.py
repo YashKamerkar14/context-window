@@ -15,12 +15,15 @@ import re
 import uuid
 from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from context_window.embeddings import Embedder, cosine
 from context_window.fetching import fetch_page_cached, load_feed_texts
-from context_window.graph.context import NewsroomContext
 from context_window.mcp_client import ToolCallError
 from context_window.schemas.enums import EvidenceKind
+
+if TYPE_CHECKING:  # the context imports the fact-checker's types
+    from context_window.graph.context import NewsroomContext
 
 _ARXIV_ABS = re.compile(r"^https?://(?:www\.)?arxiv\.org/abs/(?P<id>[^?#]+)$")
 PASSAGE_CHARS = 1200
@@ -45,7 +48,7 @@ class Evidence:
 
 
 async def gather_evidence(
-    ctx: NewsroomContext, run_id: uuid.UUID, source_url: str
+    ctx: "NewsroomContext", run_id: uuid.UUID, source_url: str
 ) -> Evidence | None:
     """The page's main text, or the reporter's text as a fallback, or None if neither."""
     problem: str | None = None
