@@ -48,6 +48,7 @@ from context_window.graph.scoring import (
 )
 from context_window.graph.state import NewsroomState, NewsroomUpdate
 from context_window.ids import uuid7
+from context_window.models import with_network_retry
 from context_window.schemas.agents import PairVerdicts, StoryPair
 from context_window.schemas.enums import Beat, StoryStatus
 from context_window.schemas.newsroom import RunError, RunStats, Story, StoryCandidate
@@ -401,8 +402,10 @@ def render_pairs(pairs: Sequence[StoryPair]) -> str:
 
 
 def make_same_event_judge(model: BaseChatModel) -> SameEventJudge:
-    structured = model.with_structured_output(
-        PairVerdicts, method="json_schema", strict=True, include_raw=True
+    structured = with_network_retry(
+        model.with_structured_output(
+            PairVerdicts, method="json_schema", strict=True, include_raw=True
+        )
     )
 
     async def judge(pairs: Sequence[StoryPair]) -> list[bool]:

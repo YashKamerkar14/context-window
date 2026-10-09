@@ -23,6 +23,7 @@ from context_window.graph.context import CoveragePlanner, NewsroomContext
 from context_window.graph.reporter.community import DEFAULT_KEYWORDS
 from context_window.graph.scoring import interest_vectors
 from context_window.graph.state import NewsroomState, NewsroomUpdate
+from context_window.models import with_network_retry
 from context_window.schemas.agents import CoverageBrief, CoveragePlan
 from context_window.schemas.enums import Beat, BriefingStatus, StoryStatus
 from context_window.schemas.newsroom import BeatAssignment, RunError, RunStats
@@ -69,8 +70,10 @@ def render_brief(brief: CoverageBrief) -> str:
 
 
 def make_coverage_planner(model: BaseChatModel) -> CoveragePlanner:
-    structured = model.with_structured_output(
-        CoveragePlan, method="json_schema", strict=True, include_raw=True
+    structured = with_network_retry(
+        model.with_structured_output(
+            CoveragePlan, method="json_schema", strict=True, include_raw=True
+        )
     )
 
     async def plan(brief: CoverageBrief) -> CoveragePlan:

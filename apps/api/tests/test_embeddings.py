@@ -51,3 +51,25 @@ async def test_embeddings_retry_network_errors_and_come_back_normalised(
     assert _FlakyClient.attempts == 2
     assert len(vectors) == 2 and vectors[0][:2] == pytest.approx([0.6, 0.8])
     assert cosine(vectors[0], vectors[1]) == pytest.approx(1.0)
+
+
+async def test_model_calls_retry_network_errors_only() -> None:
+    from langchain_core.runnables import RunnableLambda
+
+    from context_window.models import with_network_retry
+
+    calls: list[str] = []
+
+    def flaky(text: str) -> str:
+        calls.append(text)
+        if len(calls) == 1:
+            raise ssl.SSLError("bad record mac")
+        if text == "bad":
+            raise ValueError("not a network error")
+        return text.upper()
+
+    assert await with_network_retry(RunnableLambda(flaky)).ainvoke("ok") == "OK"
+    assert len(calls) == 2
+    with pytest.raises(ValueError):
+        await with_network_retry(RunnableLambda(flaky)).ainvoke("bad")
+    assert len(calls) == 3  # not retried

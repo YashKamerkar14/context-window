@@ -3,10 +3,13 @@
 Every model carries a `BudgetCallback`, so no call can bypass the run's caps.
 """
 
+import ssl
 from typing import Any, cast
 
+import httpx
 from langchain.chat_models import init_chat_model
 from langchain_core.language_models import BaseChatModel
+from langchain_core.runnables import Runnable
 
 from context_window.budget import BudgetCallback
 from context_window.config import ModelTier, Settings
@@ -33,3 +36,22 @@ def chat_model(settings: Settings, tier: ModelTier) -> BaseChatModel:
         **options,
     )
     return cast(BaseChatModel, model)
+
+
+# Network failures mid-response (a dropped or corrupted TLS connection) that the
+# provider's SDK treats as permanent and does not retry itself.
+NETWORK_ERRORS: tuple[type[BaseException], ...] = (
+    httpx.TransportError,
+    ssl.SSLError,
+    ConnectionError,
+)
+
+
+def with_network_retry[I, O](runnable: Runnable[I, O]) -> Runnable[I, O]:
+    """Retry a model call up to three times on network failures, with backoff. Each
+    attempt is a separate call for the Budget."""
+    return runnable.with_retry(
+        retry_if_exception_type=NETWORK_ERRORS,
+        wait_exponential_jitter=True,
+        stop_after_attempt=3,
+    )

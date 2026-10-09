@@ -15,6 +15,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 
 from context_window.graph.context import StoryWriter
 from context_window.graph.reporter.drafts import LeadText, StoryDrafts
+from context_window.models import with_network_retry
 from context_window.schemas.enums import Beat
 from context_window.schemas.newsroom import BeatAssignment
 
@@ -119,8 +120,10 @@ class WriterError(RuntimeError):
 
 
 def make_story_writer(model: BaseChatModel) -> StoryWriter:
-    structured = model.with_structured_output(
-        StoryDrafts, method="json_schema", strict=True, include_raw=True
+    structured = with_network_retry(
+        model.with_structured_output(
+            StoryDrafts, method="json_schema", strict=True, include_raw=True
+        )
     )
 
     async def write(

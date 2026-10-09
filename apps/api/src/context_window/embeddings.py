@@ -8,16 +8,15 @@ in LangSmith as an embedding run.
 import asyncio
 import logging
 import math
-import ssl
 from collections.abc import Awaitable, Callable, Sequence
 from typing import Any, cast
 
-import httpx
 from langsmith import traceable  # pyright: ignore[reportUnknownVariableType]
 from openrouter import OpenRouter
 
 from context_window.budget import current_budget
 from context_window.config import Settings
+from context_window.models import NETWORK_ERRORS
 
 Vector = list[float]
 Embedder = Callable[[Sequence[str]], Awaitable[list[Vector]]]
@@ -28,7 +27,7 @@ BATCH_SIZE = 96  # texts per request
 MAX_CHARS = 4000  # about 1k tokens: headlines, summaries and abstracts fit easily
 # Network failures (a dropped TLS connection, a timeout) are retried with backoff; errors
 # the API returns are not, since sending the same request again would fail the same way.
-RETRYABLE: tuple[type[BaseException], ...] = (httpx.TransportError, ssl.SSLError, ConnectionError)
+RETRYABLE = NETWORK_ERRORS
 ATTEMPTS = 3
 BACKOFF_SECONDS = 1.0
 

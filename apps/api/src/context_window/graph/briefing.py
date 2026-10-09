@@ -31,6 +31,7 @@ from context_window.budget import BudgetExceeded
 from context_window.db import models as db
 from context_window.graph.context import IntroWriter, NewsroomContext
 from context_window.graph.state import NewsroomState, NewsroomUpdate
+from context_window.models import with_network_retry
 from context_window.schemas.agents import BriefingIntro
 from context_window.schemas.enums import Beat, BriefingStatus
 from context_window.schemas.newsroom import Briefing, RunError, RunStats, Story
@@ -80,8 +81,10 @@ def render_markdown(briefing: Briefing) -> str:
 
 
 def make_intro_writer(model: BaseChatModel) -> IntroWriter:
-    structured = model.with_structured_output(
-        BriefingIntro, method="json_schema", strict=True, include_raw=True
+    structured = with_network_retry(
+        model.with_structured_output(
+            BriefingIntro, method="json_schema", strict=True, include_raw=True
+        )
     )
 
     async def write(date: dt.date, stories: Sequence[Story], light_day: bool) -> str:
