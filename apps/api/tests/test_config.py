@@ -112,3 +112,12 @@ def test_pasted_quotes_and_spaces_are_stripped(monkeypatch: pytest.MonkeyPatch) 
     assert settings.require_direct_url() == "postgresql://u:p@host/db?sslmode=require"
     assert settings.model_api_key is not None
     assert settings.model_api_key.get_secret_value() == "sk-test"
+
+
+def test_a_whole_pasted_env_line_is_reduced_to_its_value(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("MODEL_API_KEY", "MODEL_API_KEY = sk-or-test")
+    monkeypatch.setenv("DATABASE_URL_DIRECT", 'DATABASE_URL_DIRECT="postgresql://u:p@h/db"')
+    settings = _settings()
+    assert settings.model_api_key is not None
+    assert settings.model_api_key.get_secret_value() == "sk-or-test"
+    assert settings.require_direct_url() == "postgresql://u:p@h/db"

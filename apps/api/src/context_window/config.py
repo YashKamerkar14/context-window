@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Literal
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, SecretStr, ValidationInfo, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # src/context_window/config.py -> parents[4] is the repository root (editable installs only).
@@ -109,12 +109,18 @@ class Settings(BaseSettings):
         mode="before",
     )
     @classmethod
-    def _unquote(cls, value: object) -> object:
-        """Strip whitespace and one pair of surrounding quotes. A `.env` file quotes values,
-        but a value pasted with its quotes into a CI secret keeps them literally."""
+    def _unquote(cls, value: object, info: ValidationInfo) -> object:
+        """Undo what copying a whole `.env` line into a CI secret adds: surrounding
+        whitespace, the variable's own `NAME =` prefix, and one pair of quotes. A `.env`
+        file strips these itself; a raw environment variable keeps them literally."""
         if not isinstance(value, str):
             return value
         value = value.strip()
+        name = (info.field_name or "").upper()
+        if name and value.upper().startswith(name):
+            rest = value[len(name) :].lstrip()
+            if rest.startswith("="):
+                value = rest[1:].strip()
         if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
             value = value[1:-1].strip()
         return value
