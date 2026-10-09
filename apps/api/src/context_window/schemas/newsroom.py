@@ -46,6 +46,20 @@ class SentenceClaims(_Model):
     claim_ids: list[str] = Field(min_length=1)
 
 
+def fit_summary(sentences: list[SentenceClaims]) -> list[SentenceClaims]:
+    """At most MAX_SUMMARY_SENTENCES entries: extra sentences join the last allowed one,
+    keeping every claim they cite. Models sometimes write three sentences; dropping the
+    story for it would waste a checked story, and dropping a sentence would hide a claim."""
+    if len(sentences) <= MAX_SUMMARY_SENTENCES:
+        return sentences
+    keep, rest = sentences[: MAX_SUMMARY_SENTENCES - 1], sentences[MAX_SUMMARY_SENTENCES - 1 :]
+    merged = SentenceClaims(
+        sentence=" ".join(s.sentence for s in rest),
+        claim_ids=list(dict.fromkeys(i for s in rest for i in s.claim_ids)),
+    )
+    return [*keep, merged]
+
+
 class StoryCandidate(_Model):
     beat: Beat
     headline: str = Field(min_length=1, max_length=200)

@@ -33,7 +33,9 @@ from context_window.schemas.enums import Beat, SourceKind
 from context_window.schemas.newsroom import BeatAssignment, RunError
 
 HF_LIMIT = 50
-ARXIV_LIMIT = 300
+# arXiv answers slowly; 300 results timed out in a live run. 150 newest, plus Hugging
+# Face's list, leave the interest filter plenty to choose from.
+ARXIV_LIMIT = 150
 HF_BONUS = 0.15
 # How many papers survive the embedding filter, as a multiple of the beat's item cap.
 # The rest are not saved, which keeps the items table small.

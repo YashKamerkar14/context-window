@@ -46,6 +46,7 @@ from context_window.schemas.newsroom import (
     RunStats,
     SentenceClaims,
     Story,
+    fit_summary,
 )
 
 log = logging.getLogger(__name__)
@@ -223,10 +224,12 @@ async def rewrite(state: FactCheckState, runtime: Runtime[NewsroomContext]) -> F
                 Claim(id=old.id, text=text, source_url=old.source_url, attempts=old.attempts)
             )
     kept = {c.id for c in claims}
-    sentences = [
-        SentenceClaims(sentence=_clean(s.text), claim_ids=[i.strip() for i in s.claim_ids])
-        for s in rewritten.summary
-    ]
+    sentences = fit_summary(
+        [
+            SentenceClaims(sentence=_clean(s.text), claim_ids=[i.strip() for i in s.claim_ids])
+            for s in rewritten.summary
+        ]
+    )
     why = _clean(rewritten.why_it_matters)
     try:
         revised = Story.model_validate(

@@ -104,3 +104,17 @@ def test_merge_stats_reducer_handles_missing_sides() -> None:
     assert merge_stats(None, stats) is stats
     assert merge_stats(stats, None) is stats
     assert merge_stats(None, None) == RunStats()
+
+
+def test_extra_summary_sentences_join_the_second_and_keep_their_claims() -> None:
+    from context_window.schemas.newsroom import SentenceClaims, fit_summary
+
+    three = [
+        SentenceClaims(sentence="One.", claim_ids=["c1"]),
+        SentenceClaims(sentence="Two.", claim_ids=["c2"]),
+        SentenceClaims(sentence="Three.", claim_ids=["c2", "c3"]),
+    ]
+    first, second = fit_summary(three)
+    assert first == three[0]
+    assert second.sentence == "Two. Three." and second.claim_ids == ["c2", "c3"]
+    assert fit_summary(three[:2]) == three[:2]

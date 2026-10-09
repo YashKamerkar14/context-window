@@ -23,7 +23,13 @@ from context_window.db.queries import (
 )
 from context_window.graph.reporter.drafts import DraftStory
 from context_window.schemas.enums import Beat
-from context_window.schemas.newsroom import Claim, RunError, SentenceClaims, StoryCandidate
+from context_window.schemas.newsroom import (
+    Claim,
+    RunError,
+    SentenceClaims,
+    StoryCandidate,
+    fit_summary,
+)
 
 # How far back desks fetch. It matches the reporter filter's 72-hour age limit: anything
 # older could not be reported anyway.
@@ -130,6 +136,7 @@ def to_candidate(draft: DraftStory, lead: Lead) -> StoryCandidate:
         SentenceClaims(sentence=_clean(s.text), claim_ids=[c.strip() for c in s.claim_ids])
         for s in draft.summary
     ]
+    sentences = fit_summary(sentences)
     cited = {claim_id for s in sentences for claim_id in s.claim_ids}
     return StoryCandidate(
         beat=lead.beat,
