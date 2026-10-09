@@ -62,6 +62,14 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     load.add_argument("--dry-run", action="store_true", help="validate the file only")
 
+    factcheck = sub.add_parser("factcheck", help="the fact-checker's labelled claims")
+    factcheck_sub = factcheck.add_subparsers(dest="factcheck_command", required=True)
+    dataset = factcheck_sub.add_parser(
+        "dataset", help="build the labelled claims from saved stories"
+    )
+    dataset.add_argument("--force", action="store_true", help="replace the existing dataset")
+    factcheck_sub.add_parser("eval", help="measure agreement on the labelled claims")
+
     calibrate = sub.add_parser("calibrate", help="calibrate the merge thresholds")
     calibrate_sub = calibrate.add_subparsers(dest="calibrate_command", required=True)
     pairs = calibrate_sub.add_parser("pairs", help="build labelled story pairs from saved stories")
@@ -102,6 +110,8 @@ def main(argv: list[str] | None = None) -> None:
         _db(args.db_command)
     elif args.command == "settings":
         _load_settings(args.file, reset_weights=args.reset_weights, dry_run=args.dry_run)
+    elif args.command == "factcheck":
+        aio.run(_factcheck(args.factcheck_command, force=getattr(args, "force", False)))
     elif args.command == "calibrate":
         aio.run(_calibrate(args.calibrate_command, force=getattr(args, "force", False)))
     elif args.command == "mcp":
@@ -193,6 +203,50 @@ def _print_run(result: "RunResult", *, claims: bool = False) -> None:
     for error in stats.errors:
         source = f" [{error.source}]" if error.source else ""
         print(f"Error in {error.node}{source}: {error.message}")
+
+
+async def _factcheck(command: str, *, force: bool) -> None:
+    import datetime as dt
+
+    from context_window.budget import Budget, use_budget
+    from context_window.db.session import make_engine, make_sessionmaker
+    from context_window.embeddings import make_embedder
+    from context_window.factcheck import dataset
+    from context_window.factcheck.judge import make_claim_judge
+    from context_window.mcp_client import NewsroomTools
+    from context_window.models import chat_model
+
+    settings = get_settings()
+    budget = Budget(prices=settings.model_prices, max_cost_usd=0.50, max_calls=300)
+    with use_budget(budget):
+        if command == "dataset":
+            if dataset.CLAIMS_FILE.exists() and not force:
+                raise SystemExit(f"{dataset.CLAIMS_FILE} exists; pass --force to replace it")
+            engine = make_engine(settings.require_direct_url(), null_pool=True)
+            try:
+                async with make_sessionmaker(engine)() as session:
+                    claims = await dataset.candidate_claims(session)
+            finally:
+                await engine.dispose()
+            async with NewsroomTools(settings=settings) as tools:
+                pages, labelled = await dataset.build(claims, tools, chat_model(settings, "strong"))
+            dataset.write_jsonl(pages, dataset.PAGES_FILE)
+            dataset.write_jsonl(labelled, dataset.CLAIMS_FILE)
+            print(f"wrote {len(labelled)} claims about {len(pages)} pages to {dataset.CLAIMS_FILE}")
+        else:
+            fast = make_claim_judge(chat_model(settings, "fast"), run_name="judge_claims")
+            strong = make_claim_judge(chat_model(settings, "strong"), run_name="judge_unclear")
+            outcomes = await dataset.evaluate(
+                dataset.read_pages(), dataset.read_claims(), make_embedder(settings), fast, strong
+            )
+            text = dataset.report(
+                outcomes, model=settings.model_name("fast"), today=dt.date.today().isoformat()
+            )
+            dataset.REPORT_FILE.parent.mkdir(parents=True, exist_ok=True)
+            dataset.REPORT_FILE.write_text(text, encoding="utf-8")
+            agree = sum(o.agrees for o in outcomes)
+            print(f"agreement: {agree}/{len(outcomes)}; report: {dataset.REPORT_FILE}")
+    print(f"cost: ${budget.cost_usd:.5f} ({budget.calls_started} calls)")
 
 
 async def _calibrate(command: str, *, force: bool) -> None:
