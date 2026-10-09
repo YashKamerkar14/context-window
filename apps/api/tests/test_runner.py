@@ -1,5 +1,6 @@
 import datetime as dt
 
+import pytest
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -51,3 +52,45 @@ async def test_consume_marks_every_item_behind_the_candidates(session: AsyncSess
         select(Item.canonical_key).where(Item.consumed_at.is_not(None))
     )
     assert list(consumed) == ["gh:langchain-ai/langgraph@1.2.14"]
+
+
+class _Graph:
+    def __init__(self, error: BaseException) -> None:
+        self.error = error
+
+    async def ainvoke(self, *args: object, **kwargs: object) -> None:
+        raise self.error
+
+
+async def _execute(session: AsyncSession, error: BaseException) -> str:
+    from contextlib import asynccontextmanager
+
+    from context_window.db.queries import create_run
+    from context_window.runner import Newsroom
+    from context_window.schemas.enums import RunTrigger
+
+    run = await create_run(session, run_date=dt.date(2026, 10, 9), trigger=RunTrigger.MANUAL)
+
+    @asynccontextmanager
+    async def sessions():  # pyright: ignore[reportUnusedFunction]
+        yield session
+
+    newsroom = Newsroom(
+        _settings(model_prices={}),
+        sessions,  # pyright: ignore[reportArgumentType]
+        _Graph(error),  # pyright: ignore[reportArgumentType]
+        None,  # pyright: ignore[reportArgumentType]
+        False,
+    )
+    with pytest.raises(type(error)):
+        await newsroom.execute(run, {"run_id": str(run.id)})
+    await session.refresh(run)
+    return run.status
+
+
+async def test_an_interrupted_run_stays_running_so_it_can_be_resumed(session: AsyncSession) -> None:
+    assert await _execute(session, KeyboardInterrupt()) == "running"
+
+
+async def test_an_error_marks_the_run_failed(session: AsyncSession) -> None:
+    assert await _execute(session, RuntimeError("boom")) == "failed"

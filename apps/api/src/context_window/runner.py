@@ -8,7 +8,8 @@ and records the outcome on the `runs` row:
 - `awaiting_review`: the graph paused at `human_review`; the job can exit.
 - `published`: the briefing was published.
 - `rejected`: the review rejected it, or there was nothing to publish.
-- `failed`: an exception escaped the graph.
+- `failed`: an exception escaped the graph; `cw resume` retries from the checkpoint.
+- An interrupted execution (a cancelled job) leaves the run `running`.
 
 `cw run` and `cw resume` first resume any `running` run whose heartbeat stopped more
 than two minutes ago (its job died) from its last checkpoint, and `cw run` expires older
@@ -187,7 +188,7 @@ class Newsroom:
             with use_budget(budget):
                 async with heartbeat(self.sessions, run.id, settings.worker_heartbeat_seconds):
                     await self.graph.ainvoke(graph_input, config, context=self.context)
-        except BaseException as exc:
+        except Exception as exc:
             error = RunError(node="run", message=f"{type(exc).__name__}: {exc}")
             stats = prior.merge(budget.stats()).merge(RunStats(errors=[error]))
             await self._set(
@@ -196,6 +197,11 @@ class Newsroom:
                 finished_at=func.now(),
                 stats=stats.model_dump(mode="json"),
             )
+            raise
+        except BaseException:
+            # Interrupted (a cancelled Actions job, Ctrl+C): the run stays `running`, its
+            # heartbeat stops, and the next `cw run` or `cw resume` continues it.
+            log.warning("run %s interrupted; resume it with `cw resume %s`", run.id, run.id)
             raise
         finally:
             if self.tracing:
@@ -361,8 +367,8 @@ async def resume_run(settings: Settings, run_id: uuid.UUID) -> Outcome:
                     f"run {run_id} is waiting for review; decide with `cw review` first"
                 )
             graph_input: Any = Command(resume=run.review_decision)
-        elif run.status is RunStatus.RUNNING:
-            graph_input = None  # crash recovery: continue from the last checkpoint
+        elif run.status in (RunStatus.RUNNING, RunStatus.FAILED):
+            graph_input = None  # continue from the last checkpoint
         else:
             raise NothingToResumeError(f"run {run_id} has nothing to resume ({run.status})")
         return Outcome(await newsroom.execute(run, graph_input), recovered)
