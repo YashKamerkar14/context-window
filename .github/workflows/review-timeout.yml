@@ -28,7 +28,7 @@ jobs:
       MODEL_API_KEY: ${{ secrets.MODEL_API_KEY }}
       LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-      BRIEFING_EMAIL_TO: ${{ secrets.BRIEFING_EMAIL_TO }}
+      BRIEFING_EMAIL_TO: ${{ secrets.BRIEFING_EMAIL }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       MODEL_PROVIDER: openrouter
       MODEL_FAST: anthropic/claude-haiku-5.5
