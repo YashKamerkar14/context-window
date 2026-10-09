@@ -38,6 +38,12 @@ def _build_parser() -> argparse.ArgumentParser:
         "--resend", action="store_true", help="email the briefing even if it was emailed before"
     )
     run.add_argument("--claims", action="store_true", help="also print each story's claims")
+    run.add_argument(
+        "--trigger",
+        choices=["manual", "schedule"],
+        default="manual",
+        help="what started the run (the daily workflow passes schedule)",
+    )
 
     resume = sub.add_parser("resume", help="continue a paused or interrupted run")
     resume.add_argument("run_id", help="the run's id")
@@ -112,7 +118,13 @@ def main(argv: list[str] | None = None) -> None:
     if args.command == "api":
         _serve_api(reload=args.reload)
     elif args.command == "run":
-        _run(args.beat or [], force=args.force, resend=args.resend, claims=args.claims)
+        _run(
+            args.beat or [],
+            force=args.force,
+            resend=args.resend,
+            claims=args.claims,
+            trigger=args.trigger,
+        )
     elif args.command == "resume":
         _resume(args.run_id)
     elif args.command == "review":
@@ -160,15 +172,19 @@ async def _mcp(command: str, server: str, tool: str, arguments: str) -> None:
         print(json.dumps(result, indent=2, ensure_ascii=False))
 
 
-def _run(beats: list[str], *, force: bool, resend: bool, claims: bool) -> None:
+def _run(beats: list[str], *, force: bool, resend: bool, claims: bool, trigger: str) -> None:
     from context_window.db.queries import RunAlreadyActiveError
     from context_window.runner import AlreadyPublishedError, run_newsroom
-    from context_window.schemas.enums import Beat
+    from context_window.schemas.enums import Beat, RunTrigger
 
     settings = get_settings()
     selected = [Beat(b) for b in dict.fromkeys(beats)]
     try:
-        outcome = aio.run(run_newsroom(settings, selected, force=force, resend=resend))
+        outcome = aio.run(
+            run_newsroom(
+                settings, selected, trigger=RunTrigger(trigger), force=force, resend=resend
+            )
+        )
     except RunAlreadyActiveError as exc:
         raise SystemExit(f"{exc}. Resume it with `cw resume`, or wait for it.") from exc
     except AlreadyPublishedError as exc:

@@ -1,26 +1,89 @@
 name: Newsroom
 
-# Phase 1 skeleton: a manual run that starts the worker once and logs a heartbeat.
-# The daily cron and the run/resume commands are added in Phase 6.
+# The daily newsroom run, and manual runs and resumes (PLAN.md 2).
+# - Every morning at 06:17 India time: `cw run` (scheduled at an odd minute because
+#   scheduled jobs can start late at the top of the hour).
+# - "Run workflow" button: run today's newsroom, or resume a run by id.
+# A cancelled or crashed job leaves its run resumable: the next run or resume picks it up.
 on:
+  schedule:
+    - cron: "17 6 * * *"
+      timezone: "Asia/Kolkata"
   workflow_dispatch:
+    inputs:
+      command:
+        description: "run: today's newsroom. resume: continue the run below."
+        type: choice
+        options: [run, resume]
+        default: run
+      run_id:
+        description: "Run id to resume (resume only)"
+        type: string
+        required: false
+      force:
+        description: "Run even if today's briefing is already published"
+        type: boolean
+        default: false
+      resend:
+        description: "Email the briefing even if it was emailed before"
+        type: boolean
+        default: false
 
+# One newsroom job at a time; a second one waits instead of cancelling the first.
 concurrency:
   group: newsroom
   cancel-in-progress: false
 
 jobs:
-  run:
-    name: Newsroom run
+  newsroom:
+    name: Newsroom
     runs-on: ubuntu-latest
     timeout-minutes: 45
     defaults:
       run:
         working-directory: apps/api
+    env:
+      # Secrets: Settings > Secrets and variables > Actions.
+      DATABASE_URL_DIRECT: ${{ secrets.DATABASE_URL_DIRECT }}
+      MODEL_API_KEY: ${{ secrets.MODEL_API_KEY }}
+      LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      BRIEFING_EMAIL_TO: ${{ secrets.BRIEFING_EMAIL_TO }}
+      # The job's own token: enough for reading public GitHub releases.
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Configuration (not secret).
+      MODEL_PROVIDER: openrouter
+      MODEL_FAST: anthropic/claude-haiku-5.5
+      MODEL_STRONG: anthropic/claude-haiku-5.5
+      MODEL_PRICES: '{"anthropic/claude-haiku-5.5": {"in": 0.10, "out": 0.50}, "openai/text-embedding-3-small": {"in": 0.02, "out": 0}}'
+      EMBEDDING_PROVIDER: openrouter
+      EMBEDDING_MODEL: openai/text-embedding-3-small
+      LANGSMITH_PROJECT: context-window
+      LANGGRAPH_STRICT_MSGPACK: "true"
+      BRIEFING_TZ: Asia/Kolkata
+      REVIEW_MODE: auto
+      RESEND_FROM: "Context Window <onboarding@resend.dev>"
+      ACTIONS_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     steps:
       - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v10.2.0
         with:
           enable-cache: true
       - run: uv sync --locked --no-dev
-      - run: uv run cw worker --once
+      # Both are idempotent: migrations to the latest version, then the settings file.
+      - name: Prepare the database
+        run: |
+          uv run cw db init
+          uv run cw settings load
+      - name: Run the newsroom
+        if: github.event_name == 'schedule' || inputs.command == 'run'
+        env:
+          TRIGGER: ${{ github.event_name == 'schedule' && 'schedule' || 'manual' }}
+          FORCE: ${{ inputs.force && '--force' || '' }}
+          RESEND: ${{ inputs.resend && '--resend' || '' }}
+        run: uv run cw run --trigger "$TRIGGER" $FORCE $RESEND
+      - name: Resume a run
+        if: github.event_name == 'workflow_dispatch' && inputs.command == 'resume'
+        env:
+          RUN_ID: ${{ inputs.run_id }}
+        run: uv run cw resume "$RUN_ID"

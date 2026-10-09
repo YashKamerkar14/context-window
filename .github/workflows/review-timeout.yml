@@ -1,0 +1,50 @@
+name: Review timeout
+
+# Approves any run that has waited for review longer than REVIEW_TIMEOUT_HOURS
+# (PLAN.md 2). Production reviews automatically (REVIEW_MODE=auto in newsroom.yml), so
+# this only matters while manual review is switched on there. It runs a little more than
+# three hours after the daily run.
+on:
+  schedule:
+    - cron: "47 9 * * *"
+      timezone: "Asia/Kolkata"
+  workflow_dispatch:
+
+# Shares the newsroom's group, so it never runs at the same time as a newsroom job.
+concurrency:
+  group: newsroom
+  cancel-in-progress: false
+
+jobs:
+  review-timeout:
+    name: Review timeout
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: apps/api
+    env:
+      DATABASE_URL_DIRECT: ${{ secrets.DATABASE_URL_DIRECT }}
+      MODEL_API_KEY: ${{ secrets.MODEL_API_KEY }}
+      LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      BRIEFING_EMAIL_TO: ${{ secrets.BRIEFING_EMAIL_TO }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      MODEL_PROVIDER: openrouter
+      MODEL_FAST: anthropic/claude-haiku-5.5
+      MODEL_STRONG: anthropic/claude-haiku-5.5
+      MODEL_PRICES: '{"anthropic/claude-haiku-5.5": {"in": 0.10, "out": 0.50}, "openai/text-embedding-3-small": {"in": 0.02, "out": 0}}'
+      EMBEDDING_PROVIDER: openrouter
+      EMBEDDING_MODEL: openai/text-embedding-3-small
+      LANGSMITH_PROJECT: context-window
+      LANGGRAPH_STRICT_MSGPACK: "true"
+      BRIEFING_TZ: Asia/Kolkata
+      REVIEW_TIMEOUT_HOURS: "3"
+      RESEND_FROM: "Context Window <onboarding@resend.dev>"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          enable-cache: true
+      - run: uv sync --locked --no-dev
+      - run: uv run cw review-timeout

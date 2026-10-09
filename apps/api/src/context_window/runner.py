@@ -321,7 +321,12 @@ async def run_newsroom(
                 raise AlreadyPublishedError(
                     f"the briefing for {run_date} is already published; pass --force to redo it"
                 )
-            run = await create_run(session, run_date=run_date, trigger=trigger)
+            run = await create_run(
+                session,
+                run_date=run_date,
+                trigger=trigger,
+                actions_run_url=settings.actions_run_url,
+            )
             await session.commit()
         log.info("run %s started for %s", run.id, run_date)
         result = await newsroom.execute(

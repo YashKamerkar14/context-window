@@ -77,6 +77,9 @@ class Settings(BaseSettings):
     web_origin: str | None = None
     revalidate_secret: SecretStr | None = None
 
+    # Set by the newsroom workflow: the Actions run that executes this newsroom run.
+    actions_run_url: str | None = None
+
     # Run limits (PLAN.md 6.5).
     max_items_per_beat: int = Field(default=40, ge=1, le=200)
     max_model_calls_per_run: int = Field(default=150, ge=1)
