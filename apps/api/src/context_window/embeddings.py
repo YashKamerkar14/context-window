@@ -5,10 +5,14 @@ is charged to the run's Budget (with the provider's reported cost alongside) and
 in LangSmith as an embedding run.
 """
 
+import asyncio
+import logging
 import math
+import ssl
 from collections.abc import Awaitable, Callable, Sequence
 from typing import Any, cast
 
+import httpx
 from langsmith import traceable  # pyright: ignore[reportUnknownVariableType]
 from openrouter import OpenRouter
 
@@ -18,8 +22,15 @@ from context_window.config import Settings
 Vector = list[float]
 Embedder = Callable[[Sequence[str]], Awaitable[list[Vector]]]
 
+log = logging.getLogger(__name__)
+
 BATCH_SIZE = 96  # texts per request
 MAX_CHARS = 4000  # about 1k tokens: headlines, summaries and abstracts fit easily
+# Network failures (a dropped TLS connection, a timeout) are retried with backoff; errors
+# the API returns are not, since sending the same request again would fail the same way.
+RETRYABLE: tuple[type[BaseException], ...] = (httpx.TransportError, ssl.SSLError, ConnectionError)
+ATTEMPTS = 3
+BACKOFF_SECONDS = 1.0
 
 
 def normalise(vector: Sequence[float]) -> Vector:
@@ -44,10 +55,20 @@ def make_embedder(settings: Settings) -> Embedder:
         budget = current_budget()
         if budget is not None:
             budget.start_call()
-        async with OpenRouter(api_key=api_key) as client:
-            response = await client.embeddings.generate_async(
-                model=model, input=texts, dimensions=dimensions
-            )
+        for attempt in range(1, ATTEMPTS + 1):
+            try:
+                async with OpenRouter(api_key=api_key) as client:
+                    response = await client.embeddings.generate_async(
+                        model=model, input=texts, dimensions=dimensions
+                    )
+                break
+            except RETRYABLE:
+                if attempt == ATTEMPTS:
+                    raise
+                log.warning("embedding request failed (attempt %d), retrying", attempt)
+                await asyncio.sleep(BACKOFF_SECONDS * 2 ** (attempt - 1))
+        else:  # pragma: no cover - the loop always breaks or raises
+            raise AssertionError("unreachable")
         if isinstance(response, str):  # the SDK's type for an unparsed body
             raise RuntimeError(f"{model} returned an unexpected response: {response[:200]}")
         data = response.model_dump()
