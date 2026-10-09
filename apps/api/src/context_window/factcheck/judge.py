@@ -64,7 +64,9 @@ of one source and claims made about it. Judge each claim using only that text.
 match (equivalent wording is fine).
 - unsupported: the source contradicts it, or states something different: another number, \
 version, name, date, scope or degree of certainty. A claim that generalises, adds detail \
-or drops a qualifier the source has is unsupported.
+or drops a qualifier from the statement it reports is unsupported. Caveats the source \
+gives elsewhere (limitations, test conditions, disclaimers) need not be repeated: judge \
+whether what the claim says is what the source says.
 - unclear: the source neither states nor contradicts it.
 
 evidence_quote: copy the shortest passage of the source (at most one sentence) that decides \

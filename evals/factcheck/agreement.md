@@ -12,8 +12,8 @@ Unsupported claims kept out of print (judged unsupported or unclear): 40 of 40.
 | false | unsupported | 20 | 20 | 0 | 20 | 0 |
 | altered | unsupported | 20 | 20 | 0 | 20 | 0 |
 
-Escalated to the strong model as `unclear`: 1.
+Escalated to the strong model as `unclear`: 0.
 
 ## Disagreements
 
-- Claim 7 (original, labelled supported): judged unsupported. "Orion AI is a multi-agent system that uses Amazon Bedrock and Strands Agents, an open source agent orchestration framework from AWS." Reason given: The source supports the multi-agent system, Bedrock and Strands Agents, but never says Strands is open source or from AWS, so the claim adds detail the source lacks.
+- Claim 7 (original, labelled supported): judged unsupported. "Orion AI is a multi-agent system that uses Amazon Bedrock and Strands Agents, an open source agent orchestration framework from AWS." Reason given: The source confirms the multi-agent system, Bedrock and Strands orchestration, but never says Strands is open source or comes from AWS, so the claim adds detail.
