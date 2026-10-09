@@ -103,3 +103,12 @@ def test_chat_model_routes_strictly_and_charges_the_budget(
     assert model.openrouter_provider == {"require_parameters": True}
     assert isinstance(model.callbacks, list)
     assert any(isinstance(c, BudgetCallback) for c in model.callbacks)
+
+
+def test_pasted_quotes_and_spaces_are_stripped(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("DATABASE_URL_DIRECT", '  "postgresql://u:p@host/db?sslmode=require"\n')
+    monkeypatch.setenv("MODEL_API_KEY", "'sk-test'")
+    settings = _settings()
+    assert settings.require_direct_url() == "postgresql://u:p@host/db?sslmode=require"
+    assert settings.model_api_key is not None
+    assert settings.model_api_key.get_secret_value() == "sk-test"

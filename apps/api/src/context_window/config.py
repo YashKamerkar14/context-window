@@ -97,6 +97,28 @@ class Settings(BaseSettings):
     # Starter sources, watchlist and interests.
     settings_file: Path = REPO_ROOT / "config" / "settings.toml"
 
+    @field_validator(
+        "database_url",
+        "database_url_direct",
+        "model_api_key",
+        "embedding_api_key",
+        "langsmith_api_key",
+        "github_token",
+        "resend_api_key",
+        "briefing_email_to",
+        mode="before",
+    )
+    @classmethod
+    def _unquote(cls, value: object) -> object:
+        """Strip whitespace and one pair of surrounding quotes. A `.env` file quotes values,
+        but a value pasted with its quotes into a CI secret keeps them literally."""
+        if not isinstance(value, str):
+            return value
+        value = value.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+            value = value[1:-1].strip()
+        return value
+
     @field_validator("briefing_tz")
     @classmethod
     def _valid_timezone(cls, value: str) -> str:
