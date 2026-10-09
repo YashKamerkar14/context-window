@@ -6,6 +6,7 @@ request every three seconds; the shared HTTP client enforces that.
 
 import datetime as dt
 import re
+from dataclasses import replace
 from typing import Any, cast
 
 from fastmcp import Context, FastMCP
@@ -14,7 +15,6 @@ from pydantic import BaseModel, Field
 from context_window_mcp.common import (
     ClientFactory,
     build_server,
-    default_client_factory,
     http_client,
     is_since,
     run_stdio,
@@ -22,7 +22,7 @@ from context_window_mcp.common import (
     truncate,
 )
 from context_window_mcp.feeds import FeedEntry, parse_feed
-from context_window_mcp.http import FetchError
+from context_window_mcp.http import FetchError, HttpConfig, PoliteClient
 
 API = "https://export.arxiv.org/api/query"
 ABSTRACT_CHARS = 2000
@@ -98,7 +98,16 @@ async def _query(ctx: Context, params: dict[str, str | int]) -> tuple[list[Paper
     return papers, None
 
 
-def create_server(client_factory: ClientFactory = default_client_factory) -> FastMCP:
+# arXiv's API often takes longer than the default 20 s to answer a search; live runs
+# timed out on it twice.
+TIMEOUT_SECONDS = 60.0
+
+
+def arxiv_client_factory() -> PoliteClient:
+    return PoliteClient(replace(HttpConfig.from_env(), timeout_seconds=TIMEOUT_SECONDS))
+
+
+def create_server(client_factory: ClientFactory = arxiv_client_factory) -> FastMCP:
     mcp = build_server(
         "arxiv",
         "Searches recent arXiv papers by category and fetches single papers.",
