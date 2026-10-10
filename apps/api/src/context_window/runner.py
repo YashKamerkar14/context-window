@@ -29,7 +29,6 @@ from collections.abc import AsyncGenerator, Sequence
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from typing import Any
-from zoneinfo import ZoneInfo
 
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph.state import CompiledStateGraph
@@ -39,10 +38,12 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from context_window.budget import Budget, use_budget
 from context_window.config import Settings
+from context_window.dates import run_date_for
 from context_window.db.models import Run
 from context_window.db.queries import create_run, published_run_for, stale_runs, touch_heartbeat
 from context_window.db.session import make_engine, make_sessionmaker
 from context_window.embeddings import make_embedder
+from context_window.events import EventLog
 from context_window.factcheck.judge import make_claim_judge
 from context_window.factcheck.rewrite import make_story_rewriter
 from context_window.graph.briefing import make_draft_checker, make_intro_writer
@@ -100,12 +101,6 @@ class RunResult:
 class Outcome:
     result: RunResult | None
     recovered: list[RunResult] = field(default_factory=list[RunResult])
-
-
-def run_date_for(settings: Settings, now: dt.datetime | None = None) -> dt.date:
-    """The briefing date: today in BRIEFING_TZ."""
-    moment = now or dt.datetime.now(dt.UTC)
-    return moment.astimezone(ZoneInfo(settings.briefing_tz)).date()
 
 
 def build_agents(settings: Settings) -> Agents:
@@ -188,10 +183,27 @@ class Newsroom:
         try:
             with use_budget(budget):
                 async with heartbeat(self.sessions, run.id, settings.worker_heartbeat_seconds):
-                    await self.graph.ainvoke(graph_input, config, context=self.context)
+                    log_ = EventLog(self.sessions, run.id)
+                    started = "run.started" if first else "run.resumed"
+                    await log_.add(
+                        started, "run", {"run_date": run.run_date.isoformat()}, public=True
+                    )
+                    # Streaming rather than invoking feeds the live view: every node's
+                    # update, inside the parallel subgraphs too, goes to `run_events`.
+                    async for namespace, mode, data in self.graph.astream(
+                        graph_input,
+                        config,
+                        context=self.context,
+                        subgraphs=True,
+                        stream_mode=["updates", "custom"],
+                    ):
+                        await log_.record(namespace, mode, data)
         except Exception as exc:
             error = RunError(node="run", message=f"{type(exc).__name__}: {exc}")
             stats = prior.merge(budget.stats()).merge(RunStats(errors=[error]))
+            await EventLog(self.sessions, run.id).add(
+                "run.failed", "run", {"status": RunStatus.FAILED}, public=True
+            )
             await self._set(
                 run.id,
                 status=RunStatus.FAILED,
@@ -232,6 +244,9 @@ class Newsroom:
             changes["finished_at"] = func.now()
         await self._set(run.id, **changes)
         log.info("run %s: %s", run.id, status)
+        await EventLog(self.sessions, run.id).add(
+            "run.paused" if paused else "run.finished", "run", {"status": status}, public=True
+        )
         return RunResult(
             run_id=run.id,
             run_date=run.run_date,

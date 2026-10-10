@@ -25,6 +25,7 @@ from langgraph.runtime import Runtime
 from pydantic import ValidationError
 
 from context_window.budget import BudgetExceeded
+from context_window.events import progress
 from context_window.fetching import load_feed_texts, save_feed_texts
 from context_window.graph.context import NewsroomContext
 from context_window.graph.reporter.community import community_desk
@@ -91,6 +92,7 @@ async def fetch(state: ReporterState, runtime: Runtime[NewsroomContext]) -> Repo
     assignment = state["assignment"]
     beat = assignment.beat
     run_id = uuid.UUID(state["run_id"])
+    progress("reporter.fetching", beat=beat)
     try:
         result = await DESKS[beat](ctx, assignment, run_id, ctx.now())
     except Exception as exc:  # one beat's failure must not cost the others
@@ -102,6 +104,7 @@ async def fetch(state: ReporterState, runtime: Runtime[NewsroomContext]) -> Repo
         await save_feed_texts(session, run_id, result.texts)
         await session.commit()
     log.info("%s: fetched %d items, %d leads to write", beat, result.fetched, len(result.leads))
+    progress("reporter.fetched", beat=beat, items=result.fetched, leads=len(result.leads))
     return {
         "leads": result.leads,
         "stats": RunStats(

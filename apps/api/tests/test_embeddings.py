@@ -4,7 +4,8 @@ from typing import Any, Self
 import pytest
 
 from context_window import embeddings
-from context_window.embeddings import cosine, make_embedder
+from context_window.embeddings import make_embedder
+from context_window.vectors import cosine
 from tests.fakes import EMBED_DIM, settings
 
 

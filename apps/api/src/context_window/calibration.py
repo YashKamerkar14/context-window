@@ -33,10 +33,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from context_window.config import REPO_ROOT, Settings
 from context_window.db import models as db
-from context_window.embeddings import Embedder, cosine
+from context_window.embeddings import Embedder
 from context_window.graph.context import SameEventJudge
 from context_window.schemas.agents import StoryPair
 from context_window.schemas.enums import Beat
+from context_window.vectors import cosine
 
 PAIRS_FILE = REPO_ROOT / "evals" / "datasets" / "story_pairs.jsonl"
 REPORT_FILE = REPO_ROOT / "evals" / "calibration" / "merge-thresholds.md"

@@ -1,13 +1,14 @@
 import datetime as dt
+from collections.abc import AsyncGenerator
 
 import pytest
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from context_window.config import Settings
+from context_window.dates import run_date_for
 from context_window.db.models import Item, Source
 from context_window.db.queries import NewItem, consume_stories, save_items
-from context_window.runner import run_date_for
 from context_window.schemas.enums import Beat
 from context_window.schemas.newsroom import StoryCandidate
 from context_window.settings_file import SettingsFile, SourceSpec, sync_settings
@@ -58,8 +59,9 @@ class _Graph:
     def __init__(self, error: BaseException) -> None:
         self.error = error
 
-    async def ainvoke(self, *args: object, **kwargs: object) -> None:
+    async def astream(self, *args: object, **kwargs: object) -> AsyncGenerator[object]:
         raise self.error
+        yield  # an async generator, like the real stream
 
 
 async def _execute(session: AsyncSession, error: BaseException) -> str:

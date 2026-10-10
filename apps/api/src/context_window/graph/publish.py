@@ -58,6 +58,7 @@ async def publish(state: NewsroomState, runtime: Runtime[NewsroomContext]) -> Ne
             date=draft.date,
             status=BriefingStatus.PUBLISHED,
             body_markdown=render_markdown(draft),
+            content=draft.model_dump(mode="json"),
         )
         await session.execute(
             stmt.on_conflict_do_update(
@@ -66,6 +67,7 @@ async def publish(state: NewsroomState, runtime: Runtime[NewsroomContext]) -> Ne
                     "run_id": stmt.excluded.run_id,
                     "status": stmt.excluded.status,
                     "body_markdown": stmt.excluded.body_markdown,
+                    "content": stmt.excluded.content,
                 },
             )
         )

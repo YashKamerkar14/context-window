@@ -261,6 +261,8 @@ class Briefing(Base):
         str_enum(BriefingStatus, "briefing_status"), server_default=BriefingStatus.DRAFT.value
     )
     body_markdown: Mapped[str] = mapped_column(Text)
+    # The Briefing schema as JSON: intro, ordered stories with their claims and sources.
+    content: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
     emailed_at: Mapped[dt.datetime | None] = mapped_column(Timestamp)
     created_at: Mapped[dt.datetime] = _created_at()
     updated_at: Mapped[dt.datetime] = _updated_at()

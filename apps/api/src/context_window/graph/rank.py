@@ -36,7 +36,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from context_window.budget import BudgetExceeded
 from context_window.db import models as db
 from context_window.db.queries import find_similar_stories
-from context_window.embeddings import Vector, cosine
 from context_window.graph.context import NewsroomContext, SameEventJudge
 from context_window.graph.scoring import (
     authority_score,
@@ -52,6 +51,7 @@ from context_window.models import with_network_retry
 from context_window.schemas.agents import PairVerdicts, StoryPair
 from context_window.schemas.enums import Beat, StoryStatus
 from context_window.schemas.newsroom import RunError, RunStats, Story, StoryCandidate
+from context_window.vectors import Vector, cosine
 
 log = logging.getLogger(__name__)
 

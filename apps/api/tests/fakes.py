@@ -15,7 +15,6 @@ from fastmcp.client.transports import FastMCPTransport
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from context_window.config import Settings
-from context_window.embeddings import Vector
 from context_window.factcheck.judge import ClaimToCheck, Judgement
 from context_window.factcheck.rewrite import RewrittenStory
 from context_window.graph.context import Agents, NewsroomContext, StoryWriter
@@ -31,6 +30,7 @@ from context_window.mcp_client import NewsroomTools
 from context_window.schemas.agents import CoverageBrief, CoveragePlan, StoryPair
 from context_window.schemas.enums import Beat, Verdict
 from context_window.schemas.newsroom import BeatAssignment, Claim, Story
+from context_window.vectors import Vector
 
 EMBED_DIM = 1536  # the database's vector width
 _WORD = re.compile(r"[a-z0-9]+(?:\.[0-9]+)*")

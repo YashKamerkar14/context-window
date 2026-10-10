@@ -17,10 +17,11 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from context_window.embeddings import Embedder, cosine
+from context_window.embeddings import Embedder
 from context_window.fetching import fetch_page_cached, load_feed_texts
 from context_window.mcp_client import ToolCallError
 from context_window.schemas.enums import EvidenceKind
+from context_window.vectors import cosine
 
 if TYPE_CHECKING:  # the context imports the fact-checker's types
     from context_window.graph.context import NewsroomContext

@@ -122,12 +122,20 @@ async def save_draft(
         if status == BriefingStatus.PUBLISHED:
             return False
         stmt = insert(db.Briefing).values(
-            run_id=run_id, date=briefing.date, status=BriefingStatus.DRAFT, body_markdown=body
+            run_id=run_id,
+            date=briefing.date,
+            status=BriefingStatus.DRAFT,
+            body_markdown=body,
+            content=briefing.model_dump(mode="json"),
         )
         await session.execute(
             stmt.on_conflict_do_update(
                 index_elements=[db.Briefing.date],
-                set_={"run_id": stmt.excluded.run_id, "body_markdown": stmt.excluded.body_markdown},
+                set_={
+                    "run_id": stmt.excluded.run_id,
+                    "body_markdown": stmt.excluded.body_markdown,
+                    "content": stmt.excluded.content,
+                },
             )
         )
         await session.commit()

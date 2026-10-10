@@ -77,6 +77,14 @@ class Settings(BaseSettings):
     web_origin: str | None = None
     revalidate_secret: SecretStr | None = None
 
+    # API (PLAN.md 8). Write endpoints need ADMIN_TOKEN; the browser never sees it. Runs
+    # are started and resumed through workflow_dispatch with a fine-grained token that
+    # can only use Actions on this repository.
+    admin_token: SecretStr | None = None
+    github_dispatch_token: SecretStr | None = None
+    github_repository: str = "YashKamerkar14/context-window"
+    newsroom_workflow: str = "newsroom.yml"
+
     # Set by the newsroom workflow: the Actions run that executes this newsroom run.
     actions_run_url: str | None = None
 
@@ -106,6 +114,8 @@ class Settings(BaseSettings):
         "github_token",
         "resend_api_key",
         "briefing_email_to",
+        "admin_token",
+        "github_dispatch_token",
         mode="before",
     )
     @classmethod

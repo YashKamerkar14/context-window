@@ -7,7 +7,6 @@ in LangSmith as an embedding run.
 
 import asyncio
 import logging
-import math
 from collections.abc import Awaitable, Callable, Sequence
 from typing import Any, cast
 
@@ -17,8 +16,8 @@ from openrouter import OpenRouter
 from context_window.budget import current_budget
 from context_window.config import Settings
 from context_window.models import NETWORK_ERRORS
+from context_window.vectors import Vector, normalise
 
-Vector = list[float]
 Embedder = Callable[[Sequence[str]], Awaitable[list[Vector]]]
 
 log = logging.getLogger(__name__)
@@ -30,16 +29,6 @@ MAX_CHARS = 4000  # about 1k tokens: headlines, summaries and abstracts fit easi
 RETRYABLE = NETWORK_ERRORS
 ATTEMPTS = 3
 BACKOFF_SECONDS = 1.0
-
-
-def normalise(vector: Sequence[float]) -> Vector:
-    norm = math.sqrt(sum(x * x for x in vector))
-    return [x / norm for x in vector] if norm else list(vector)
-
-
-def cosine(a: Sequence[float], b: Sequence[float]) -> float:
-    """Cosine similarity of two unit vectors."""
-    return sum(x * y for x, y in zip(a, b, strict=True))
 
 
 def make_embedder(settings: Settings) -> Embedder:

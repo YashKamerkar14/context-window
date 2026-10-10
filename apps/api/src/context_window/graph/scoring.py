@@ -14,8 +14,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from context_window.db.models import Interest
-from context_window.embeddings import Embedder, Vector, cosine
+from context_window.embeddings import Embedder
 from context_window.schemas.enums import Beat
+from context_window.vectors import Vector, cosine
 
 WEIGHTS = {"interest": 0.40, "authority": 0.25, "recency": 0.20, "cross_source": 0.15}
 # Raw cosine from modern embedding models clusters around 0.2 to 0.6, so it is rescaled.
