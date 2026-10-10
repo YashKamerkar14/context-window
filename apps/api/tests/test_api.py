@@ -181,7 +181,9 @@ async def test_starting_a_run_needs_the_token_and_never_duplicates(
 
     accepted = await client.post("/runs", json={}, headers=ADMIN)
     assert accepted.status_code == 202
-    assert dispatched == [{"command": "run", "force": "false", "resend": "false"}]
+    assert dispatched == [
+        {"command": "run", "force": "false", "resend": "false", "review_mode": "auto"}
+    ]
 
     today = dt.datetime.now(dt.UTC).date()
     active = await create_run(session, run_date=today, trigger=RunTrigger.MANUAL)

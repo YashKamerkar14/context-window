@@ -29,6 +29,11 @@ on:
         description: "Email the briefing even if it was emailed before"
         type: boolean
         default: false
+      review_mode:
+        description: "auto publishes at once; manual pauses for a review decision"
+        type: choice
+        options: [auto, manual]
+        default: auto
 
 # One newsroom job at a time; a second one waits instead of cancelling the first.
 concurrency:
@@ -62,7 +67,8 @@ jobs:
       LANGSMITH_PROJECT: context-window
       LANGGRAPH_STRICT_MSGPACK: "true"
       BRIEFING_TZ: Asia/Kolkata
-      REVIEW_MODE: auto
+      # Scheduled runs review automatically; a manual run may ask to pause for review.
+      REVIEW_MODE: ${{ inputs.review_mode || 'auto' }}
       RESEND_FROM: "Context Window <onboarding@resend.dev>"
       ACTIONS_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     steps:

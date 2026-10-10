@@ -397,8 +397,14 @@ def _serve_api(*, reload: bool) -> None:
     import uvicorn
 
     settings = get_settings()
+    # psycopg's async mode cannot use Windows' default ProactorEventLoop (see aio.py).
+    loop = "asyncio:SelectorEventLoop" if sys.platform == "win32" else "auto"
     uvicorn.run(
-        "context_window.api.app:app", host=settings.api_host, port=settings.port, reload=reload
+        "context_window.api.app:app",
+        host=settings.api_host,
+        port=settings.port,
+        reload=reload,
+        loop=loop,
     )
 
 

@@ -63,6 +63,8 @@ class EventOut(BaseModel):
 class StartRun(BaseModel):
     force: bool = False
     resend: bool = False
+    # manual: the run pauses for POST /runs/{id}/review before publishing.
+    review: Literal["auto", "manual"] = "auto"
 
 
 class Accepted(BaseModel):
@@ -162,6 +164,7 @@ async def start_run(body: StartRun, session: SessionDep, settings: SettingsDep) 
                 "command": "run",
                 "force": _flag(body.force),
                 "resend": _flag(body.resend),
+                "review_mode": body.review,
             },
         )
     except DispatchError as exc:
