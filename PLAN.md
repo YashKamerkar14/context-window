@@ -467,12 +467,19 @@ structured data and never raise on an empty result.
    note appears when it applies.
 2. **Archive (`/briefings/[date]`)** — the same layout for past dates, with previous
    and next links.
-3. **Live newsroom (`/newsroom`)** — the agent graph drawn with React Flow. The dynamic
-   branches (4 reporters and about 14 fact-checks) are drawn from `run_events` as
-   stacked child nodes, not from the static graph. The page polls the events endpoint
-   about every 2 seconds while a run is active. Nodes light up as they run. Public
-   viewers see sanitised progress. An admin sees agent output in a side panel and, when
-   the run pauses for review, the draft with approve, edit, remove and reject controls.
+3. **Newsroom floor (`/newsroom`)** — the run drawn as a newsroom floor with React Flow.
+   Each agent is a character at its own desk: an editor, four reporters, a desk editor,
+   a fact desk (one tile per story being checked), a writer, a copy check, the human
+   editor, a publisher and an archivist. Each desk shows a speech bubble saying what the
+   agent is doing, paper moves along the routes as work is handed over, counters tick
+   up, and a wire lists every step in plain words. The view is derived on the client
+   from `run_events`, so a past run can be replayed: when no run is live, the page
+   replays the latest run on a compressed timeline, with play, pause, speed and a
+   scrubber. While a run is active, the page polls the events endpoint about every 2
+   seconds. Public viewers see sanitised progress. An admin sees each agent's full
+   output when they click its desk and, when the run pauses for review, the draft with
+   approve, edit, remove and reject controls. On a phone the desks become a list of
+   cards. The briefing page links here with a "made by a newsroom of AI agents" strip.
 4. **Login (`/login`)** — a password sets an httpOnly, Secure, SameSite=Lax signed
    session cookie (`ADMIN_SESSION_SECRET`). Admin calls, including polling admin events,
    go through `app/api/admin/*` route handlers, which add `ADMIN_TOKEN` on the server.
@@ -482,10 +489,13 @@ update immediately.
 
 **Design rules**
 
-- One reading column, maximum width about 720px, generous white space.
+- Reading pages: one column, maximum width about 720px, generous white space.
 - A serif typeface for headlines, a sans-serif for everything else.
-- Neutral palette. Colour is used only for beat labels and status.
-- Bordered rows for stories, not heavy cards. No gradients or shadows.
+- Reading pages stay quiet: a neutral palette, with colour only for beat labels and
+  status, and bordered rows for stories rather than heavy cards.
+- The newsroom floor is where the site is playful: each agent has its own colour and
+  avatar, and motion (bobbing avatars, typing dots, flying paper, tiles flipping)
+  shows work happening. All motion stops under `prefers-reduced-motion`.
 - Light and dark mode from the start.
 - Sentence case for all labels.
 - Works well on a phone.

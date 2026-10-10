@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { latestRun } from "@/lib/api";
 import type { Briefing } from "@/lib/types";
 
+import { NewsroomStrip } from "./floor/strip";
 import { StoryList } from "./story-list";
 
 export function formatDate(iso: string): string {
@@ -91,6 +92,7 @@ export function BriefingView({
         <Stat value={briefing.stats.stories_kept} label="Stories kept" />
         <Stat value={briefing.stats.claims_verified} label="Claims verified" />
       </div>
+      {latest && <NewsroomStrip />}
       <p className="mt-6 text-lg leading-relaxed">{briefing.intro}</p>
       {briefing.light_day && (
         <p className="mt-3 rounded-lg border border-border px-4 py-3 text-sm text-muted-foreground">
