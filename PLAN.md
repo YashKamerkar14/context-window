@@ -434,7 +434,8 @@ structured data and never raise on an empty result.
 
 | Method and path | Purpose | Auth |
 |---|---|---|
-| `POST /runs` | Trigger `newsroom.yml` through `workflow_dispatch`; returns 202. The job is idempotent on `run_date` (`force=true` to override) | Admin token |
+| `POST /runs` | Trigger `newsroom.yml` through `workflow_dispatch`; returns 202. Refused with 409 while a run for today is active, or once it is published (`force=true` to override). `review=manual` makes the run pause for review (scheduled runs review automatically) | Admin token |
+| `GET /runs` | Recent runs, newest first (added in Phase 7: after `POST /runs` the job creates the run, so this is how to find it) | Public (same fields as below) |
 | `GET /runs/{id}` | Run status and public stats | Public (`trace_url` and `actions_run_url` are admin only) |
 | `GET /runs/{id}/events?after=<event id>` | Events from `run_events` newer than `after`; the web app polls about every 2 s | Public: sanitised events only (node, status, counts, timings). Admin: full events including agent output and draft |
 | `POST /runs/{id}/review` | Record a review decision, then trigger `workflow_dispatch` to run `cw resume` | Admin token |
