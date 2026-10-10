@@ -42,6 +42,7 @@ from context_window.dates import run_date_for
 from context_window.db.models import Run
 from context_window.db.queries import create_run, published_run_for, stale_runs, touch_heartbeat
 from context_window.db.session import make_engine, make_sessionmaker
+from context_window.email import email_config, send_failure_alert
 from context_window.embeddings import make_embedder
 from context_window.events import EventLog
 from context_window.factcheck.judge import make_claim_judge
@@ -210,6 +211,7 @@ class Newsroom:
                 finished_at=func.now(),
                 stats=stats.model_dump(mode="json"),
             )
+            await self._alert_failure(run, error.message)
             raise
         except BaseException:
             # Interrupted (a cancelled Actions job, Ctrl+C): the run stays `running`, its
@@ -261,6 +263,25 @@ class Newsroom:
             budget=budget,
             trace_url=trace,
         )
+
+    async def _alert_failure(self, run: Run, error: str) -> None:
+        """Email the editor that the run failed. Best effort: never hides the run's error."""
+        config = email_config(self.settings)
+        if config is None:
+            log.info("email not configured; no failure alert sent")
+            return
+        origin = self.settings.web_origin
+        try:
+            await send_failure_alert(
+                config,
+                run_date=run.run_date,
+                run_id=run.id,
+                error=error,
+                actions_run_url=self.settings.actions_run_url,
+                newsroom_url=f"{origin.rstrip('/')}/newsroom" if origin else None,
+            )
+        except Exception:
+            log.warning("could not send the failure alert for run %s", run.id, exc_info=True)
 
     async def _set(self, run_id: uuid.UUID, **values: Any) -> None:
         async with self.sessions() as session:

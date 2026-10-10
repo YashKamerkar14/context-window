@@ -9,6 +9,7 @@ from context_window.config import Settings
 from context_window.dates import run_date_for
 from context_window.db.models import Item, Source
 from context_window.db.queries import NewItem, consume_stories, save_items
+from context_window.email import EmailConfig
 from context_window.schemas.enums import Beat
 from context_window.schemas.newsroom import StoryCandidate
 from context_window.settings_file import SettingsFile, SourceSpec, sync_settings
@@ -64,7 +65,9 @@ class _Graph:
         yield  # an async generator, like the real stream
 
 
-async def _execute(session: AsyncSession, error: BaseException) -> str:
+async def _execute(
+    session: AsyncSession, error: BaseException, settings: Settings | None = None
+) -> str:
     from contextlib import asynccontextmanager
 
     from context_window.db.queries import create_run
@@ -78,7 +81,7 @@ async def _execute(session: AsyncSession, error: BaseException) -> str:
         yield session
 
     newsroom = Newsroom(
-        _settings(model_prices={}),
+        settings or _settings(model_prices={}),
         sessions,  # pyright: ignore[reportArgumentType]
         _Graph(error),  # pyright: ignore[reportArgumentType]
         None,  # pyright: ignore[reportArgumentType]
@@ -101,3 +104,59 @@ async def test_an_interrupted_run_stays_running_so_it_can_be_resumed(session: As
 
 async def test_an_error_marks_the_run_failed(session: AsyncSession) -> None:
     assert await _execute(session, RuntimeError("boom")) == "failed"
+
+
+_EMAIL: dict[str, object] = {
+    "model_prices": {},
+    "resend_api_key": "re_test",
+    "resend_from": "Context Window <onboarding@resend.dev>",
+    "briefing_email_to": "me@example.com",
+    "actions_run_url": "https://github.com/o/r/actions/runs/1",
+}
+
+
+async def test_a_failed_run_emails_an_alert(
+    session: AsyncSession, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    sent: list[dict[str, object]] = []
+
+    async def send(config: EmailConfig, **alert: object) -> str:
+        sent.append({"to": config.to, **alert})
+        return "email-id"
+
+    monkeypatch.setattr("context_window.runner.send_failure_alert", send)
+    assert await _execute(session, RuntimeError("boom"), _settings(**_EMAIL)) == "failed"
+    assert len(sent) == 1
+    assert sent[0]["to"] == "me@example.com"
+    assert sent[0]["error"] == "RuntimeError: boom"
+    assert sent[0]["actions_run_url"] == "https://github.com/o/r/actions/runs/1"
+
+
+async def test_an_alert_that_cannot_be_sent_does_not_hide_the_error(
+    session: AsyncSession, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    async def send(config: EmailConfig, **alert: object) -> str:
+        raise ConnectionError("resend is down")
+
+    monkeypatch.setattr("context_window.runner.send_failure_alert", send)
+    # The run's own error still propagates (not the alert's), and the run is failed.
+    assert await _execute(session, RuntimeError("boom"), _settings(**_EMAIL)) == "failed"
+
+
+def test_the_alert_names_the_date_the_error_and_where_to_look() -> None:
+    import uuid
+
+    from context_window.email import render_failure
+
+    run_id = uuid.uuid4()
+    text = render_failure(
+        run_date=dt.date(2026, 10, 9),
+        run_id=run_id,
+        error="RuntimeError: boom",
+        actions_run_url="https://github.com/o/r/actions/runs/1",
+        newsroom_url="https://example.com/newsroom",
+    )
+    assert "2026-10-09" in text and "RuntimeError: boom" in text
+    assert f"cw resume {run_id}" in text
+    assert "https://github.com/o/r/actions/runs/1" in text
+    assert "https://example.com/newsroom" in text

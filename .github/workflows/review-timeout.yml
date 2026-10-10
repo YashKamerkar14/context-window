@@ -44,6 +44,8 @@ jobs:
       BRIEFING_TZ: Asia/Kolkata
       REVIEW_TIMEOUT_HOURS: "3"
       RESEND_FROM: "Context Window <onboarding@resend.dev>"
+      # Linked from the failure alert if a run fails here.
+      ACTIONS_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     steps:
       - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v10.2.0

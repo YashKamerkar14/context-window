@@ -1,4 +1,5 @@
 """The briefing email: a Jinja2 HTML template sent through Resend (PLAN.md 3 and 6.3).
+Also the alert sent to the same address when a run fails (PLAN.md 12, Phase 9).
 
 The idempotency key `briefing-<date>` makes Resend send a date's briefing at most once,
 even if publishing runs twice. Story text comes from fetched sources, so the template
@@ -6,7 +7,9 @@ escapes everything.
 """
 
 import asyncio
+import datetime as dt
 import logging
+import uuid
 from dataclasses import dataclass
 from urllib.parse import urlsplit
 
@@ -120,6 +123,63 @@ async def send_briefing(config: EmailConfig, briefing: Briefing, key: str) -> st
                 "text": render_text(briefing),
             },
             {"idempotency_key": key},
+        )
+        return str(response["id"])
+
+    return await asyncio.to_thread(send)
+
+
+def render_failure(
+    *,
+    run_date: dt.date,
+    run_id: uuid.UUID,
+    error: str,
+    actions_run_url: str | None,
+    newsroom_url: str | None,
+) -> str:
+    lines = [
+        f"The newsroom run for {run_date.isoformat()} failed.",
+        "",
+        f"Error: {error}",
+        f"Run id: {run_id}",
+        "",
+        "It is saved at its last checkpoint. To continue it, use the Newsroom workflow's",
+        f'"Run workflow" button with command "resume", or run `cw resume {run_id}`.',
+    ]
+    if actions_run_url:
+        lines += ["", f"Job log: {actions_run_url}"]
+    if newsroom_url:
+        lines += [f"Newsroom: {newsroom_url}"]
+    return "\n".join(lines)
+
+
+async def send_failure_alert(
+    config: EmailConfig,
+    *,
+    run_date: dt.date,
+    run_id: uuid.UUID,
+    error: str,
+    actions_run_url: str | None,
+    newsroom_url: str | None,
+) -> str:
+    """Tell the editor a run failed; return Resend's email id."""
+    text = render_failure(
+        run_date=run_date,
+        run_id=run_id,
+        error=error,
+        actions_run_url=actions_run_url,
+        newsroom_url=newsroom_url,
+    )
+
+    def send() -> str:
+        resend.api_key = config.api_key
+        response = resend.Emails.send(
+            {
+                "from": config.sender,
+                "to": [config.to],
+                "subject": f"Context Window: the run for {run_date.isoformat()} failed",
+                "text": text,
+            }
         )
         return str(response["id"])
 
