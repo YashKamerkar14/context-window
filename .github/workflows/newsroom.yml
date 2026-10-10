@@ -57,6 +57,9 @@ jobs:
       BRIEFING_EMAIL_TO: ${{ secrets.BRIEFING_EMAIL }}
       # The job's own token: enough for reading public GitHub releases.
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Publishing refreshes the web app at once (POST /api/revalidate).
+      REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
+      WEB_ORIGIN: https://context-window-gamma.vercel.app
       # Configuration (not secret).
       MODEL_PROVIDER: openrouter
       MODEL_FAST: anthropic/claude-haiku-5.5

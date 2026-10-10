@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Source_Serif_4 } from "next/font/google";
+import { SiteHeader } from "@/components/site-header";
+
 import "./globals.css";
 
 const geistSans = Geist({
@@ -22,12 +24,20 @@ export const metadata: Metadata = {
   description: "A verified daily briefing on AI for engineers.",
 };
 
-// Follow the system colour scheme until the theme toggle lands in Phase 8.
+// Runs before paint: the saved theme ("light", "dark" or "system"), else the system's.
 const themeScript = `(() => {
+  let saved = "system";
+  try { saved = localStorage.getItem("theme") || "system"; } catch {}
   const media = window.matchMedia("(prefers-color-scheme: dark)");
-  const apply = () => document.documentElement.classList.toggle("dark", media.matches);
+  const apply = () => {
+    const dark = saved === "dark" || (saved === "system" && media.matches);
+    document.documentElement.classList.toggle("dark", dark);
+  };
   apply();
-  media.addEventListener("change", apply);
+  media.addEventListener("change", () => {
+    try { saved = localStorage.getItem("theme") || "system"; } catch {}
+    apply();
+  });
 })();`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -40,7 +50,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        <SiteHeader />
+        <div className="flex-1">{children}</div>
+        <footer className="mx-auto w-full max-w-[720px] px-4 py-10 text-xs text-muted-foreground sm:px-6">
+          Every claim in a published story was checked against its source before
+          publication.
+        </footer>
+      </body>
     </html>
   );
 }
