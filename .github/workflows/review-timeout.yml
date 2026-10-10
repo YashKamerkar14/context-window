@@ -6,8 +6,8 @@ name: Review timeout
 # three hours after the daily run.
 on:
   schedule:
-    - cron: "47 9 * * *"
-      timezone: "Asia/Kolkata"
+    # 04:17 UTC is 09:47 in India, three and a half hours after the daily run.
+    - cron: "17 4 * * *"
   workflow_dispatch:
 
 # Shares the newsroom's group, so it never runs at the same time as a newsroom job.

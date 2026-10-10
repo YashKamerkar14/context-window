@@ -1,14 +1,15 @@
 name: Newsroom
 
 # The daily newsroom run, and manual runs and resumes (PLAN.md 2).
-# - Every morning at 06:17 India time: `cw run` (scheduled at an odd minute because
+# - Every morning at 06:17 India time (00:47 UTC): `cw run` (at an odd minute because
 #   scheduled jobs can start late at the top of the hour).
 # - "Run workflow" button: run today's newsroom, or resume a run by id.
 # A cancelled or crashed job leaves its run resumable: the next run or resume picks it up.
 on:
   schedule:
-    - cron: "17 6 * * *"
-      timezone: "Asia/Kolkata"
+    # 00:47 UTC is 06:17 in India. GitHub ignored a `timezone` key here (the first
+    # scheduled run came at 06:23 UTC), so the time is given in UTC.
+    - cron: "47 0 * * *"
   workflow_dispatch:
     inputs:
       command:
