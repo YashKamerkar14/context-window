@@ -90,6 +90,11 @@ async def _execute(session: AsyncSession, error: BaseException) -> str:
 
 async def test_an_interrupted_run_stays_running_so_it_can_be_resumed(session: AsyncSession) -> None:
     assert await _execute(session, KeyboardInterrupt()) == "running"
+    # Its model usage so far is kept for the run's total.
+    from context_window.db.models import Run
+
+    run = (await session.scalars(select(Run).order_by(Run.started_at.desc()))).first()
+    assert run is not None and run.stats.get("model_calls") == 0
 
 
 async def test_an_error_marks_the_run_failed(session: AsyncSession) -> None:

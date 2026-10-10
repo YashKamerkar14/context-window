@@ -21,6 +21,7 @@ runs still waiting for review.
 # pyright: reportUnknownMemberType=false, reportMissingTypeStubs=false
 
 import asyncio
+import contextlib
 import datetime as dt
 import logging
 import uuid
@@ -200,8 +201,12 @@ class Newsroom:
             raise
         except BaseException:
             # Interrupted (a cancelled Actions job, Ctrl+C): the run stays `running`, its
-            # heartbeat stops, and the next `cw run` or `cw resume` continues it.
+            # heartbeat stops, and the next `cw run` or `cw resume` continues it. Its model
+            # usage so far is saved, best effort, so the run's total stays right.
             log.warning("run %s interrupted; resume it with `cw resume %s`", run.id, run.id)
+            usage = prior.merge(budget.stats()).model_dump(mode="json")
+            with contextlib.suppress(Exception):
+                await asyncio.wait_for(self._set(run.id, stats=usage), timeout=5)
             raise
         finally:
             if self.tracing:
