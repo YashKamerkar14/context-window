@@ -459,12 +459,15 @@ structured data and never raise on an empty result.
 
 **Screens**
 
-1. **Briefing (`/`)** — a server component. It shows the date, a one-line run status,
-   three small stat tiles (items scanned, stories kept, claims verified), beat filter
-   pills, then the stories as bordered rows. Each row has a beat label, headline,
-   summary, "why it matters", and a "Checked against N sources" line that expands to
-   show the links. Thumbs up and down appear only with an admin session. A light-day
-   note appears when it applies.
+1. **Briefing (`/`)** — a server component laid out as a newspaper front page. A
+   masthead shows the run status, the date, the day's numbers (items read, claims
+   verified, stories kept) and the agents who made it, linking to the newsroom floor.
+   The intro follows with a drop cap, then section tabs per beat, the lead story large,
+   and the rest in two columns. Each story has a beat label, headline, summary, "why it
+   matters", a byline (the beat's reporter, the fact desk, and the human editor if they
+   edited it), a "verified" stamp with its claim count, and a "How we know" line that
+   expands to show each claim with its evidence. Thumbs up and down appear only with an
+   admin session. A light-day note appears when it applies.
 2. **Archive (`/briefings/[date]`)** — the same layout for past dates, with previous
    and next links.
 3. **Newsroom floor (`/newsroom`)** — the run drawn as a newsroom floor with React Flow.
@@ -489,10 +492,12 @@ update immediately.
 
 **Design rules**
 
-- Reading pages: one column, maximum width about 720px, generous white space.
+- The briefing is a front page about 1100px wide; story text stays within a readable
+  line length.
 - A serif typeface for headlines, a sans-serif for everything else.
-- Reading pages stay quiet: a neutral palette, with colour only for beat labels and
-  status, and bordered rows for stories rather than heavy cards.
+- Reading stays calm: a neutral palette, with colour for beat labels, status and the
+  agents. Motion on the briefing is limited to stories rising in and stamps landing,
+  once, as they scroll into view.
 - The newsroom floor is where the site is playful: each agent has its own colour and
   avatar, and motion (bobbing avatars, typing dots, flying paper, tiles flipping)
   shows work happening. All motion stops under `prefers-reduced-motion`.

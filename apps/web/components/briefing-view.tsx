@@ -5,6 +5,7 @@ import { latestRun } from "@/lib/api";
 import type { Briefing } from "@/lib/types";
 
 import { NewsroomStrip } from "./floor/strip";
+import { CountUp } from "./reveal";
 import { StoryList } from "./story-list";
 
 export function formatDate(iso: string): string {
@@ -18,9 +19,9 @@ export function formatDate(iso: string): string {
 }
 
 const STATUS_TEXT: Record<string, string> = {
-  running: "The newsroom is working on the next briefing",
-  awaiting_review: "The next briefing is waiting for review",
-  resume_requested: "The next briefing is being published",
+  running: "The newsroom is working on the next edition",
+  awaiting_review: "The next edition is waiting for review",
+  resume_requested: "The next edition is being published",
   published: "Published",
   failed: "The last run failed",
 };
@@ -37,9 +38,9 @@ async function RunStatus({ date }: { date: string }) {
       ? "Published this morning"
       : (STATUS_TEXT[run.status] ?? run.status);
   return (
-    <p className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+    <span className="flex items-center gap-2">
       <span
-        className={`inline-block size-2 rounded-full ${live ? "animate-pulse bg-amber-500" : run.status === "failed" ? "bg-red-500" : "bg-emerald-500"}`}
+        className={`inline-block size-2 rounded-full ${live ? "cw-live bg-red-500" : run.status === "failed" ? "bg-red-500" : "bg-emerald-500"}`}
         aria-hidden
       />
       {live ? (
@@ -47,23 +48,69 @@ async function RunStatus({ date }: { date: string }) {
           href="/newsroom"
           className="underline underline-offset-2 hover:text-foreground"
         >
-          {text}
+          {text}: watch live
         </Link>
       ) : (
         text
       )}
-    </p>
+    </span>
   );
 }
 
-function Stat({ value, label }: { value: number; label: string }) {
+function Masthead({
+  briefing,
+  latest,
+}: {
+  briefing: Briefing;
+  latest: boolean;
+}) {
+  const { items_scanned, stories_kept, claims_verified } = briefing.stats;
   return (
-    <div className="rounded-lg border border-border px-4 py-3">
-      <p className="font-heading text-2xl tabular-nums">
-        {value.toLocaleString("en-GB")}
+    <header>
+      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-1 border-b border-border pb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        {latest ? (
+          <Suspense fallback={<span />}>
+            <RunStatus date={briefing.date} />
+          </Suspense>
+        ) : (
+          <Link href="/" className="hover:text-foreground">
+            From the archive · go to today&apos;s edition →
+          </Link>
+        )}
+        <span>The daily AI briefing for engineers</span>
+      </div>
+      <p className="py-5 text-center font-heading text-5xl leading-none tracking-tight sm:py-7 sm:text-7xl lg:text-8xl">
+        Context Window
       </p>
-      <p className="text-xs text-muted-foreground">{label}</p>
-    </div>
+      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-y-4 border-double border-foreground py-3 text-sm">
+        <h1 className="font-heading text-lg font-semibold sm:text-xl">
+          {formatDate(briefing.date)}
+        </h1>
+        <p className="flex flex-wrap items-center gap-x-2 text-muted-foreground">
+          <span>
+            <span className="font-semibold text-foreground">
+              <CountUp value={items_scanned} />
+            </span>{" "}
+            items read
+          </span>
+          <span aria-hidden>▸</span>
+          <span>
+            <span className="font-semibold text-foreground">
+              <CountUp value={claims_verified} />
+            </span>{" "}
+            claims verified
+          </span>
+          <span aria-hidden>▸</span>
+          <span>
+            <span className="font-semibold text-foreground">
+              <CountUp value={stories_kept} />
+            </span>{" "}
+            stories made the cut
+          </span>
+        </p>
+        <NewsroomStrip />
+      </div>
+    </header>
   );
 }
 
@@ -75,33 +122,26 @@ export function BriefingView({
   latest: boolean;
 }) {
   return (
-    <main className="mx-auto w-full max-w-[720px] px-4 py-10 sm:px-6">
-      <p className="text-sm text-muted-foreground">
-        {latest ? "Today's briefing" : "Briefing"}
-      </p>
-      <h1 className="mt-1 font-heading text-3xl leading-tight sm:text-4xl">
-        {formatDate(briefing.date)}
-      </h1>
-      {latest && (
-        <Suspense fallback={<p className="mt-2 h-5 text-sm" />}>
-          <RunStatus date={briefing.date} />
-        </Suspense>
-      )}
-      <div className="mt-6 grid grid-cols-3 gap-2 sm:gap-3">
-        <Stat value={briefing.stats.items_scanned} label="Items scanned" />
-        <Stat value={briefing.stats.stories_kept} label="Stories kept" />
-        <Stat value={briefing.stats.claims_verified} label="Claims verified" />
-      </div>
-      {latest && <NewsroomStrip />}
-      <p className="mt-6 text-lg leading-relaxed">{briefing.intro}</p>
-      {briefing.light_day && (
-        <p className="mt-3 rounded-lg border border-border px-4 py-3 text-sm text-muted-foreground">
-          A light day: fewer than five stories cleared the bar, so this briefing
-          is short rather than padded.
+    <main className="mx-auto w-full max-w-[1100px] px-4 py-6 sm:px-6 sm:py-8">
+      <Masthead briefing={briefing} latest={latest} />
+      <section className="mt-8 grid gap-4 lg:grid-cols-[180px_minmax(0,1fr)] lg:gap-10">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground lg:pt-2">
+          The day in brief
         </p>
-      )}
+        <div>
+          <p className="max-w-[68ch] text-xl leading-relaxed first-letter:float-left first-letter:mt-1 first-letter:mr-2 first-letter:font-heading first-letter:text-6xl first-letter:leading-[0.85] first-letter:font-semibold">
+            {briefing.intro}
+          </p>
+          {briefing.light_day && (
+            <p className="mt-4 max-w-[68ch] rounded-lg border border-border px-4 py-3 text-sm text-muted-foreground">
+              A light day: fewer than five stories cleared the bar, so this
+              edition is short rather than padded.
+            </p>
+          )}
+        </div>
+      </section>
       <StoryList stories={briefing.stories} />
-      <nav className="mt-6 flex justify-between border-t border-border pt-6 text-sm">
+      <nav className="mt-6 flex justify-between gap-4 border-t-4 border-double border-foreground pt-6 text-sm">
         {briefing.previous_date ? (
           <Link
             href={`/briefings/${briefing.previous_date}`}
@@ -115,7 +155,7 @@ export function BriefingView({
         {briefing.next_date ? (
           <Link
             href={`/briefings/${briefing.next_date}`}
-            className="text-muted-foreground hover:text-foreground"
+            className="text-right text-muted-foreground hover:text-foreground"
           >
             {formatDate(briefing.next_date)} →
           </Link>

@@ -243,3 +243,47 @@
 .react-flow {
   --xy-background-color: transparent;
 }
+
+/* The briefing front page: stories rise in and the fact desk's stamp lands, once each,
+   as they scroll into view (components/reveal.tsx). Hidden first only when motion is
+   allowed, so with reduced motion everything is simply there. */
+@keyframes cw-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes cw-stamp {
+  0% {
+    opacity: 0;
+    transform: rotate(-14deg) scale(2.2);
+  }
+  60% {
+    opacity: 1;
+    transform: rotate(-14deg) scale(0.92);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(-14deg) scale(1);
+  }
+}
+.cw-stamp,
+.cw-stamp-in {
+  transform: rotate(-14deg);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .cw-reveal,
+  .cw-stamp {
+    opacity: 0;
+  }
+  .cw-reveal-in {
+    animation: cw-rise 0.6s ease-out both;
+  }
+  .cw-stamp-in {
+    animation: cw-stamp 0.5s cubic-bezier(0.3, 1.4, 0.5, 1) 0.25s both;
+  }
+}

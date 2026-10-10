@@ -17,7 +17,7 @@ export default function BriefingPage({
   return (
     <Suspense
       fallback={
-        <main className="mx-auto w-full max-w-[720px] px-4 py-10 sm:px-6" />
+        <main className="mx-auto w-full max-w-[1100px] px-4 py-8 sm:px-6" />
       }
     >
       {params.then(({ date }) => (
