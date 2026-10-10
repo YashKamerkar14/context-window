@@ -5,7 +5,8 @@ PgBouncer) with no pool of its own: each request opens a connection through the 
 """
 
 import secrets
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Callable
+from contextlib import AbstractAsyncContextManager
 from functools import lru_cache
 from typing import Annotated
 
@@ -21,16 +22,24 @@ def settings_dep() -> Settings:
 
 
 @lru_cache
-def _sessions() -> async_sessionmaker[AsyncSession]:
+def sessions() -> async_sessionmaker[AsyncSession]:
     return make_sessionmaker(make_engine(get_settings().require_pooled_url(), null_pool=True))
 
 
 async def session_dep() -> AsyncGenerator[AsyncSession]:
-    async with _sessions()() as session:
+    async with sessions()() as session:
         yield session
 
 
+def session_factory_dep() -> Callable[[], AbstractAsyncContextManager[AsyncSession]]:
+    """For endpoints that must survive a missing or broken database (health)."""
+    return sessions()
+
+
 SettingsDep = Annotated[Settings, Depends(settings_dep)]
+SessionFactoryDep = Annotated[
+    Callable[[], AbstractAsyncContextManager[AsyncSession]], Depends(session_factory_dep)
+]
 SessionDep = Annotated[AsyncSession, Depends(session_dep)]
 
 

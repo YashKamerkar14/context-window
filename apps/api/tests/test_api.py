@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from context_window import __version__
 from context_window.api import runs as runs_api
 from context_window.api.app import create_app
-from context_window.api.deps import session_dep, settings_dep
+from context_window.api.deps import session_dep, session_factory_dep, settings_dep
 from context_window.db import models as db
 from context_window.db.queries import create_run
 from context_window.events import EventLog, public_summary
@@ -41,7 +41,12 @@ def dispatched(monkeypatch: pytest.MonkeyPatch) -> list[dict[str, str]]:
 
 @pytest.fixture
 async def client(session: AsyncSession) -> AsyncGenerator[httpx.AsyncClient]:
-    config = settings(admin_token=TOKEN, web_origin=ORIGIN, briefing_tz="UTC")
+    config = settings(
+        admin_token=TOKEN,
+        web_origin=ORIGIN,
+        briefing_tz="UTC",
+        database_url="postgresql://test@localhost/test",  # the session is overridden
+    )
     import context_window.api.app as app_module
 
     original = app_module.get_settings
@@ -55,6 +60,7 @@ async def client(session: AsyncSession) -> AsyncGenerator[httpx.AsyncClient]:
         yield session
 
     app.dependency_overrides[session_dep] = test_session
+    app.dependency_overrides[session_factory_dep] = lambda: asynccontextmanager(test_session)
     app.dependency_overrides[settings_dep] = lambda: config
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://api") as http:
@@ -97,6 +103,14 @@ async def test_health_reports_the_database_and_the_last_run(
     assert body["status"] == "ok" and body["version"] == __version__ and body["database"] == "ok"
     assert body["last_run"]["status"] == "running"
     assert body["last_run"]["heartbeat_age_seconds"] >= 0
+
+
+async def test_health_reports_a_missing_database_instead_of_failing(session: AsyncSession) -> None:
+    from context_window.api.health import health
+
+    config = settings(database_url=None, database_url_direct=None)
+    body = await health(config, lambda: None)  # pyright: ignore[reportArgumentType]
+    assert body.status == "degraded" and body.database == "not configured"
 
 
 async def test_briefings_serve_only_published_days(
