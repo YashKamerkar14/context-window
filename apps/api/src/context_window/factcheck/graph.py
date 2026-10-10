@@ -25,6 +25,7 @@ import operator
 import time
 import uuid
 from typing import Annotated, Literal, Required, TypedDict
+from urllib.parse import urlsplit
 
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
@@ -125,7 +126,8 @@ async def check(state: FactCheckState, runtime: Runtime[NewsroomContext]) -> Fac
     failed = set(state.get("fetch_failed", []))
     claims = {c.id: c for c in story.claims}
     primary = story.claims[0].source_url
-    progress("fact_check.checking", beat=story.beat, claims=len(story.claims))
+    domain = (urlsplit(primary).hostname or "").removeprefix("www.")
+    progress("fact_check.checking", beat=story.beat, claims=len(story.claims), source=domain)
     progress("fact_check.story", public=False, story_id=story.id, headline=story.headline)
     sources = list(dict.fromkeys(c.source_url for c in story.claims if c.verdict is None))
     if why_ok is None and primary not in sources:
