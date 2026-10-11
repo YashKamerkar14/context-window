@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="300" viewBox="0 0 1000 300" role="img" aria-labelledby="title desc">
+  <title id="title">A newsroom run in the terminal</title>
+  <desc id="desc">The 11 October run: the editor briefs four reporters, they read 242 items and file 32 stories, the desk sends the top 12 to the fact desk, 42 claims are checked and all 42 supported, the writer drafts the briefing, and 10 stories are published for $0.042.</desc>
+  <defs>
+    <style>
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 15px; }
+      .who { fill: #e3a14b; }
+      .txt { fill: #c9d1d9; }
+      .dim { fill: #6e7681; }
+      .ok { fill: #3fb950; }
+      .prompt { fill: #3fb950; font-weight: 700; }
+      .row { opacity: 0; animation: appear 0.35s ease-out forwards; }
+      .cursor { animation: blink 1.1s steps(1) infinite; }
+      @keyframes appear { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; transform: none; } }
+      @keyframes blink { 50% { opacity: 0; } }
+      @media (prefers-reduced-motion: reduce) { .row { animation: none; opacity: 1; } .cursor { animation: none; } }
+    </style>
+  </defs>
+
+  <rect x="1" y="1" width="998" height="298" rx="12" fill="#0d1117" stroke="#30363d" stroke-width="1.5"/>
+  <path d="M1 13 a12 12 0 0 1 12 -12 h974 a12 12 0 0 1 12 12 v25 h-998 z" fill="#161b22"/>
+  <circle cx="24" cy="20" r="6" fill="#ff5f57"/><circle cx="44" cy="20" r="6" fill="#febc2e"/><circle cx="64" cy="20" r="6" fill="#28c840"/>
+  <text x="500" y="25" text-anchor="middle" class="mono dim" style="font-size:13px">context-window — the 11 October run</text>
+
+  <g class="mono">
+    <text x="28" y="70" class="row" style="animation-delay:.2s"><tspan class="prompt">$ </tspan><tspan class="txt">uv run cw run</tspan></text>
+    <text x="28" y="98" class="row" style="animation-delay:.9s"><tspan class="who" x="48">editor</tspan><tspan class="txt" x="170">briefed 4 reporters</tspan></text>
+    <text x="28" y="122" class="row" style="animation-delay:1.6s"><tspan class="who" x="48">reporters</tspan><tspan class="txt" x="170">read 242 items · filed 32 stories</tspan></text>
+    <text x="28" y="146" class="row" style="animation-delay:2.3s"><tspan class="who" x="48">desk</tspan><tspan class="txt" x="170">merged and ranked · top 12 to the fact desk</tspan></text>
+    <text x="28" y="170" class="row" style="animation-delay:3.0s"><tspan class="who" x="48">fact desk</tspan><tspan class="txt" x="170">42 claims checked against their sources · </tspan><tspan class="ok">42 supported</tspan></text>
+    <text x="28" y="194" class="row" style="animation-delay:3.7s"><tspan class="who" x="48">writer</tspan><tspan class="txt" x="170">drafted the intro · copy check passed</tspan></text>
+    <text x="28" y="226" class="row" style="animation-delay:4.4s"><tspan class="ok" x="48">✓ published</tspan><tspan class="txt" x="170">10 stories · emailed · </tspan><tspan class="dim">43 model calls · $0.042</tspan></text>
+    <text x="28" y="262" class="row" style="animation-delay:5.0s"><tspan class="prompt">$ </tspan><tspan class="cursor" fill="#e3a14b">█</tspan></text>
+  </g>
+</svg>
