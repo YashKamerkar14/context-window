@@ -22,9 +22,9 @@
   <img src="https://img.shields.io/badge/MCP-tools-6E40C9?style=flat-square&logo=modelcontextprotocol&logoColor=white&labelColor=30363d" alt="MCP">
   <img src="https://img.shields.io/badge/Neon_Postgres-pgvector-00A67E?style=flat-square&logo=postgresql&logoColor=white&labelColor=30363d" alt="Neon Postgres">
   <img src="https://img.shields.io/badge/FastAPI-API-009688?style=flat-square&logo=fastapi&logoColor=white&labelColor=30363d" alt="FastAPI">
-  <img src="https://img.shields.io/badge/Next.js-web-111111?style=flat-square&logo=nextdotjs&logoColor=white&labelColor=30363d" alt="Next.js">
+  <img src="https://img.shields.io/badge/Next.js-web-4A5568?style=flat-square&logo=nextdotjs&logoColor=white&labelColor=30363d" alt="Next.js">
   <img src="https://img.shields.io/badge/GitHub_Actions-runs-2088FF?style=flat-square&logo=githubactions&logoColor=white&labelColor=30363d" alt="GitHub Actions">
-  <img src="https://img.shields.io/badge/Vercel-hosting-111111?style=flat-square&logo=vercel&logoColor=white&labelColor=30363d" alt="Vercel">
+  <img src="https://img.shields.io/badge/Vercel-hosting-4A5568?style=flat-square&logo=vercel&logoColor=white&labelColor=30363d" alt="Vercel">
 </p>
 
 <p align="center">
