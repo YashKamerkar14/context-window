@@ -123,6 +123,9 @@ works, or run `docker compose up -d` for a local one on port 5433. You also need
    cp .env.example .env
    ```
 
+   On Windows, clone to a short path such as `C:\dev`: one of the dev tools installs
+   files deeper than Windows' default 260-character path limit.
+
 2. In `.env`, set `MODEL_API_KEY` and `GITHUB_TOKEN`. If you use Neon, set
    `DATABASE_URL` to its pooled connection string and `DATABASE_URL_DIRECT` to the
    direct one. The Docker defaults already match `docker compose`.
