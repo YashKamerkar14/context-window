@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from context_window import __version__
-from context_window.api import briefings, health, runs, settings_routes, stories
+from context_window.api import briefings, cron, health, runs, settings_routes, stories
 from context_window.config import get_settings
 
 
@@ -20,7 +20,7 @@ def create_app() -> FastAPI:
             allow_methods=["GET", "POST", "PUT"],
             allow_headers=["Authorization", "Content-Type"],
         )
-    for module in (health, briefings, runs, stories, settings_routes):
+    for module in (health, briefings, runs, stories, settings_routes, cron):
         app.include_router(module.router)
     return app
 

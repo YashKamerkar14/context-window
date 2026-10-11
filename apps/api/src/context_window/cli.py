@@ -185,9 +185,14 @@ def _run(beats: list[str], *, force: bool, resend: bool, claims: bool, trigger: 
                 settings, selected, trigger=RunTrigger(trigger), force=force, resend=resend
             )
         )
-    except RunAlreadyActiveError as exc:
-        raise SystemExit(f"{exc}. Resume it with `cw resume`, or wait for it.") from exc
-    except AlreadyPublishedError as exc:
+    except (RunAlreadyActiveError, AlreadyPublishedError) as exc:
+        # Two schedules can start a day's run (Vercel Cron, and GitHub's as a backup):
+        # the second finds the work done or under way, which is not a failure.
+        if trigger == RunTrigger.SCHEDULE:
+            print(f"Nothing to do: {exc}.")
+            return
+        if isinstance(exc, RunAlreadyActiveError):
+            raise SystemExit(f"{exc}. Resume it with `cw resume`, or wait for it.") from exc
         raise SystemExit(str(exc)) from exc
     _print_outcome(outcome, claims=claims)
 

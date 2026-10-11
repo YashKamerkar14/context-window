@@ -26,6 +26,7 @@ from tests.test_newsroom_schemas import candidate
 TOKEN = "test-admin-token"
 ADMIN = {"Authorization": f"Bearer {TOKEN}"}
 ORIGIN = "https://web.example"
+CRON_SECRET = "test-cron-secret"
 
 
 @pytest.fixture
@@ -43,6 +44,7 @@ def dispatched(monkeypatch: pytest.MonkeyPatch) -> list[dict[str, str]]:
 async def client(session: AsyncSession) -> AsyncGenerator[httpx.AsyncClient]:
     config = settings(
         admin_token=TOKEN,
+        cron_secret=CRON_SECRET,
         web_origin=ORIGIN,
         briefing_tz="UTC",
         database_url="postgresql://test@localhost/test",  # the session is overridden
@@ -314,3 +316,39 @@ def test_public_summaries_carry_no_text() -> None:
         }
     )
     assert summary == {"draft": "set", "published": True, "assignments": 2}
+
+
+@pytest.fixture
+def cron_dispatched(monkeypatch: pytest.MonkeyPatch) -> list[dict[str, str]]:
+    from context_window.api import cron as cron_api
+
+    calls: list[dict[str, str]] = []
+
+    async def fake_dispatch(_settings: Any, inputs: dict[str, str], **_: Any) -> None:
+        calls.append(inputs)
+
+    monkeypatch.setattr(cron_api, "dispatch", fake_dispatch)
+    return calls
+
+
+async def test_the_daily_cron_needs_its_secret_and_starts_one_run_a_day(
+    client: httpx.AsyncClient, session: AsyncSession, cron_dispatched: list[dict[str, str]]
+) -> None:
+    url = "/cron/daily-run"
+    assert (await client.get(url)).status_code == 401
+    assert (await client.get(url, headers=ADMIN)).status_code == 401  # not the admin token
+    cron = {"Authorization": f"Bearer {CRON_SECRET}"}
+
+    started = await client.get(url, headers=cron)
+    assert started.status_code == 200 and started.json()["status"] == "dispatched"
+    assert cron_dispatched == [{"command": "run", "trigger": "schedule", "review_mode": "auto"}]
+
+    # Once today's run exists, the timer leaves it alone.
+    today = dt.datetime.now(dt.UTC).date()  # the test settings use UTC
+    run = await create_run(session, run_date=today, trigger=RunTrigger.SCHEDULE)
+    skipped = await client.get(url, headers=cron)
+    assert skipped.json()["status"] == "skipped"
+    run.status = RunStatus.PUBLISHED
+    await session.flush()
+    assert (await client.get(url, headers=cron)).json()["status"] == "skipped"
+    assert len(cron_dispatched) == 1

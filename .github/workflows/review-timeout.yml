@@ -6,8 +6,9 @@ name: Review timeout
 # three hours after the daily run.
 on:
   schedule:
-    # 04:17 UTC is 09:47 in India, three and a half hours after the daily run.
-    - cron: "17 4 * * *"
+    # 17:17 UTC is 10:17 Pacific in summer (09:17 in winter), a few hours after the daily
+    # run. GitHub may start it hours late; it only expires runs past REVIEW_TIMEOUT_HOURS.
+    - cron: "17 17 * * *"
   workflow_dispatch:
 
 # Shares the newsroom's group, so it never runs at the same time as a newsroom job.
@@ -41,7 +42,7 @@ jobs:
       EMBEDDING_MODEL: openai/text-embedding-3-small
       LANGSMITH_PROJECT: context-window
       LANGGRAPH_STRICT_MSGPACK: "true"
-      BRIEFING_TZ: Asia/Kolkata
+      BRIEFING_TZ: America/Los_Angeles
       REVIEW_TIMEOUT_HOURS: "3"
       RESEND_FROM: "Context Window <onboarding@resend.dev>"
       # Linked from the failure alert if a run fails here.

@@ -1,15 +1,16 @@
 name: Newsroom
 
 # The daily newsroom run, and manual runs and resumes (PLAN.md 2).
-# - Every morning at 06:17 India time (00:47 UTC): `cw run` (at an odd minute because
-#   scheduled jobs can start late at the top of the hour).
+# - Every morning, Vercel Cron calls the API's GET /cron/daily-run between 13:00 and 14:00
+#   UTC (06:00-07:00 Pacific in summer, 05:00-06:00 in winter), which dispatches this
+#   workflow with trigger=schedule. GitHub's own schedule below is only a backup: on this
+#   repository it fires about six hours late, and finds the day done.
 # - "Run workflow" button: run today's newsroom, or resume a run by id.
 # A cancelled or crashed job leaves its run resumable: the next run or resume picks it up.
 on:
   schedule:
-    # 00:47 UTC is 06:17 in India. GitHub ignored a `timezone` key here (the first
-    # scheduled run came at 06:23 UTC), so the time is given in UTC.
-    - cron: "47 0 * * *"
+    # Backup only (see above). An odd minute, since jobs at the top of the hour start later.
+    - cron: "17 14 * * *"
   workflow_dispatch:
     inputs:
       command:
@@ -34,6 +35,11 @@ on:
         type: choice
         options: [auto, manual]
         default: auto
+      trigger:
+        description: "schedule when started by the daily timer (Vercel Cron)"
+        type: choice
+        options: [manual, schedule]
+        default: manual
 
 # One newsroom job at a time; a second one waits instead of cancelling the first.
 concurrency:
@@ -69,7 +75,7 @@ jobs:
       EMBEDDING_MODEL: openai/text-embedding-3-small
       LANGSMITH_PROJECT: context-window
       LANGGRAPH_STRICT_MSGPACK: "true"
-      BRIEFING_TZ: Asia/Kolkata
+      BRIEFING_TZ: America/Los_Angeles
       # Scheduled runs review automatically; a manual run may ask to pause for review.
       REVIEW_MODE: ${{ inputs.review_mode || 'auto' }}
       RESEND_FROM: "Context Window <onboarding@resend.dev>"
@@ -88,7 +94,7 @@ jobs:
       - name: Run the newsroom
         if: github.event_name == 'schedule' || inputs.command == 'run'
         env:
-          TRIGGER: ${{ github.event_name == 'schedule' && 'schedule' || 'manual' }}
+          TRIGGER: ${{ github.event_name == 'schedule' && 'schedule' || inputs.trigger || 'manual' }}
           FORCE: ${{ inputs.force && '--force' || '' }}
           RESEND: ${{ inputs.resend && '--resend' || '' }}
         run: uv run cw run --trigger "$TRIGGER" $FORCE $RESEND

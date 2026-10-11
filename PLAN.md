@@ -48,7 +48,7 @@ file plus a CLI), and npm release tracking.
 
 ```mermaid
 flowchart TD
-    T[GitHub Actions cron, or POST /runs → workflow_dispatch] --> WK[Actions job: cw run]
+    T[Vercel Cron or POST /runs → workflow_dispatch] --> WK[Actions job: cw run]
     WK --> E[Editor-in-chief: plan coverage]
     E -- Send per beat --> R[Reporter subgraph x4]
     R --> M[Merge and rank]
@@ -73,9 +73,12 @@ flowchart TD
 
 **Execution model (free setup).** No server runs the graph. A GitHub Actions job does.
 
-- **Starting a run.** A scheduled workflow (`newsroom.yml`, cron in `BRIEFING_TZ`)
-  runs `cw run`. A manual run comes from `POST /runs` or the "Run workflow" button,
-  which trigger the same workflow through `workflow_dispatch`.
+- **Starting a run.** Every morning Vercel Cron calls the API's `GET /cron/daily-run`,
+  which triggers `newsroom.yml` through `workflow_dispatch` to run `cw run`. GitHub's
+  own `schedule` turned out to fire about six hours late on this repository, so it is
+  kept only as a backup; a scheduled run that finds the day already published ends
+  quietly. A manual run comes from `POST /runs` or the "Run workflow" button, which
+  trigger the same workflow.
 - **One run at a time.** The job inserts the `runs` row, which is idempotent on
   `run_date`, and executes the graph with `thread_id = run_id`. A workflow
   `concurrency` group stops two runs from overlapping.
@@ -133,7 +136,7 @@ flowchart TD
 | Worker | GitHub Actions jobs running `cw run` / `cw resume` | `newsroom.yml` (daily cron plus dispatch) and `review-timeout.yml`. Use a private repo: scheduled workflows in public repos are disabled after 60 days without commits |
 | Database | Neon Postgres 18 with pgvector 0.8 | Branch `dev` for local work, `production` for deployed. Docker (`pgvector/pgvector:0.8.7-pg18`) is an optional offline alternative |
 | Migrations | Alembic with SQLAlchemy 2 (async) | Excludes the checkpointer's tables |
-| Scheduling | GitHub Actions `schedule` (cron with an IANA time zone) | It may start a few minutes late, especially at the top of the hour, so schedule at an odd minute such as :17 |
+| Scheduling | Vercel Cron (Hobby: once a day, within the chosen hour) calling the API, which dispatches the workflow; GitHub Actions `schedule` as a backup | GitHub's `schedule` ignores time zones and fired about six hours late here. Both use UTC, so the local time shifts by an hour with daylight saving |
 | Tracing and evals | LangSmith | Tracing on from Phase 4. Cost is enforced locally; LangSmith only reports it |
 | Front end | Next.js 16 (App Router), TypeScript, Tailwind CSS v4, shadcn/ui | Server components for reading pages |
 | Data fetching (web) | TanStack Query | Only on the client screens (live view, review) |
@@ -162,7 +165,7 @@ context-window/
 ├── .env.example
 ├── .github/workflows/
 │   ├── ci.yml                   lint, types, tests, build
-│   ├── newsroom.yml             daily cron + workflow_dispatch: cw run / cw resume
+│   ├── newsroom.yml             workflow_dispatch (daily from Vercel Cron) + backup cron: cw run / cw resume
 │   └── review-timeout.yml       auto-approves runs left waiting for review
 ├── config/
 │   └── settings.toml            sources, watchlist, interests (seed and source of truth; TOML
@@ -435,6 +438,7 @@ structured data and never raise on an empty result.
 | Method and path | Purpose | Auth |
 |---|---|---|
 | `POST /runs` | Trigger `newsroom.yml` through `workflow_dispatch`; returns 202. Refused with 409 while a run for today is active, or once it is published (`force=true` to override). `review=manual` makes the run pause for review (scheduled runs review automatically) | Admin token |
+| `GET /cron/daily-run` | Called by Vercel Cron each morning: dispatches today's scheduled run unless one is active or published (added after Phase 9) | `CRON_SECRET` bearer token |
 | `GET /runs` | Recent runs, newest first (added in Phase 7: after `POST /runs` the job creates the run, so this is how to find it) | Public (same fields as below) |
 | `GET /runs/{id}` | Run status and public stats | Public (`trace_url` and `actions_run_url` are admin only) |
 | `GET /runs/{id}/events?after=<event id>` | Events from `run_events` newer than `after`; the web app polls about every 2 s | Public: sanitised events only (node, status, counts, timings). Admin: full events including agent output and draft |
@@ -686,7 +690,7 @@ and vote on stories, all from the browser. `ADMIN_TOKEN` does not appear in the 
 ### Phase 9 — Schedule and email in production
 
 1. Set up Resend. Use the test sender to your own address, or verify a domain if you have one.
-2. Add the repository secrets for Actions, and enable the `newsroom.yml` cron in `BRIEFING_TZ` at an odd minute.
+2. Add the repository secrets for Actions, and start the daily run each morning in `BRIEFING_TZ` (Vercel Cron calling `GET /cron/daily-run`, with the `newsroom.yml` cron as a backup).
 3. Point production at the Neon `production` branch, and set `REVIEW_MODE=auto` there.
 4. Add basic monitoring. GitHub emails you when a workflow fails; also email from the job when a run ends `failed`.
 
@@ -746,7 +750,7 @@ MAX_FETCH_BYTES=2000000
 
 # App
 ADMIN_TOKEN=
-BRIEFING_TZ=Asia/Kolkata
+BRIEFING_TZ=America/Los_Angeles
 REVIEW_MODE=manual               # set to auto in production
 REVIEW_TIMEOUT_HOURS=3
 MAX_STORIES=10
@@ -765,6 +769,7 @@ NEXT_PUBLIC_API_URL=
 # GitHub Actions dispatch (used by the API to start and resume runs)
 GITHUB_DISPATCH_TOKEN=           # fine-grained, this repo only, Actions: read and write
 GITHUB_REPOSITORY=YashKamerkar14/context-window
+CRON_SECRET=                     # Vercel Cron's bearer token for GET /cron/daily-run
 
 # Email
 RESEND_API_KEY=

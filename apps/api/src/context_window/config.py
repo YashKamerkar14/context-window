@@ -83,6 +83,8 @@ class Settings(BaseSettings):
     admin_token: SecretStr | None = None
     github_dispatch_token: SecretStr | None = None
     github_repository: str = "YashKamerkar14/context-window"
+    # Sent by Vercel Cron to GET /cron/daily-run (apps/api/vercel.json).
+    cron_secret: SecretStr | None = None
     newsroom_workflow: str = "newsroom.yml"
 
     # Set by the newsroom workflow: the Actions run that executes this newsroom run.
@@ -116,6 +118,7 @@ class Settings(BaseSettings):
         "briefing_email_to",
         "admin_token",
         "github_dispatch_token",
+        "cron_secret",
         mode="before",
     )
     @classmethod
