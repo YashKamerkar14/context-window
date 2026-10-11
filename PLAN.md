@@ -742,7 +742,6 @@ LANGSMITH_TRACING=true
 
 # Sources
 GITHUB_TOKEN=
-HF_TOKEN=                        # optional
 MAX_FETCH_BYTES=2000000
 
 # App
@@ -755,7 +754,6 @@ FACT_CHECK_POOL=14
 MAX_ITEMS_PER_BEAT=40
 MAX_MODEL_CALLS_PER_RUN=150
 MAX_COST_PER_RUN_USD=1.50
-PUBLIC_API_URL=
 WEB_ORIGIN=
 
 # Web (server-side only unless prefixed NEXT_PUBLIC_)
