@@ -111,7 +111,7 @@ Measured with [`evals/run_evals.py`](evals/run_evals.py) on the first three edit
 
 | Metric | Result | Target |
 |---|---|---|
-| Fact-checker agreement with human labels (60 claims, 40 of them false or subtly altered) | **98.3%** (59/60) | 90% or higher |
+| Fact-checker agreement on a labelled benchmark (60 claims, 40 of them false or subtly altered) | **98.3%** (59/60) | 90% or higher |
 | Claim accuracy (50 published claims, checked against the source) | **100%** (50/50) | 95% or higher |
 | Unverified sentence rate | **0%** (0/41) | under 2% |
 | Duplicate rate (stories repeated within 14 days) | **0%** (0/21) | under 3% |
@@ -123,7 +123,10 @@ Three editions is a small sample; the numbers will be re-run after a full week. 
 sample was checked by an AI assistant (a different model from the newsroom's fact-checker)
 against each source page, with notes on every borderline case in
 [`claim_accuracy.jsonl`](evals/datasets/claim_accuracy.jsonl). The fact-checker's benchmark
-is in [`agreement.md`](evals/factcheck/agreement.md).
+was built from 20 real source pages: one true claim from each (kept only when a passage that
+supports it is really on the page), plus a plainly false and a subtly altered version of
+each. Its labels come from how each claim was made, not from people labelling claims one by
+one. Details in [`agreement.md`](evals/factcheck/agreement.md).
 
 ## see it
 
